@@ -3,9 +3,9 @@
 
 #include "types.h"
 
-extern u32 D_80226EB8;
+extern u32 gAudioRandom;
 
-extern struct Object *gMarioObject; //80361158
+extern struct Object *gMarioObject;
 extern struct Object *gLuigiObject;
 
 extern s32 is_anim_at_end(struct MarioState *m);

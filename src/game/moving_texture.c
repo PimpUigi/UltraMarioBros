@@ -12,7 +12,7 @@
 #include "engine/surface_collision.h"
 #include "geo_misc.h"
 #include "rendering_graph_node.h"
-#include "room.h"
+#include "object_list_processor.h"
 
 /**
  * This file contains functions for generating display lists with moving textures
@@ -392,17 +392,6 @@ struct MovtexQuad {
     s16 textureId; /// texture id
 };
 
-/**
- * Contains an id and an array of MovtexQuad structs.
- */
-struct MovtexQuadCollection {
-    /// identifier for geo nodes to refer to this MovtexQuad collection
-    s16 id;
-    s16 filler;
-    /// points to a short 'n' followed by an array of n MovtexQuad structs
-    void *quadArraySegmented;
-};
-
 /// Variable for a little optimization: only set the texture when it differs from the previous texture
 s16 gMovetexLastTextureId;
 
@@ -456,22 +445,12 @@ Gfx *movtex_gen_from_quad(s16 y, struct MovtexQuad *quad) {
 
     // Only add commands to change the texture when necessary
     if (textureId != gMovetexLastTextureId) {
-        if (textureId == TEXTURE_MIST) { // an G_IM_FMT_IA texture
+        if (textureId == TEXTURE_MIST) { // an ia16 texture
             if (0) {
             }
-            gDPSetTextureImage(gfx++, G_IM_FMT_IA, G_IM_SIZ_16b, 1, gMovtexIdToTexture[textureId]);
-            gDPTileSync(gfx++);
-            gDPSetTile(gfx++, G_IM_FMT_IA, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP, G_TX_NOMASK,
-                    G_TX_NOLOD, G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-            gDPLoadSync(gfx++);
-            gDPLoadBlock(gfx++, 7, 0, 0, 1023, 256);
+            gLoadBlockTexture(gfx++, 32, 32, G_IM_FMT_IA, gMovtexIdToTexture[textureId]);
         } else { // any rgba16 texture
-            gDPSetTextureImage(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, gMovtexIdToTexture[textureId]);
-            gDPTileSync(gfx++);
-            gDPSetTile(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP, G_TX_NOMASK,
-                    G_TX_NOLOD, G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-            gDPLoadSync(gfx++);
-            gDPLoadBlock(gfx++, 7, 0, 0, 1023, 256);
+            gLoadBlockTexture(gfx++, 32, 32, G_IM_FMT_RGBA, gMovtexIdToTexture[textureId]);
             if (0) {
             }
         }
@@ -667,7 +646,7 @@ Gfx *geo_movtex_draw_water_regions(s32 callContext, struct GraphNode *node, UNUS
         }
         asGenerated = (struct GraphNodeGenerated *) node;
         if (asGenerated->parameter == JRB_MOVTEX_INTIAL_MIST) {
-            if (gCameraStatus[0].camFocAndPosCurrAndGoal[3][1] < 1024.0) { // if camera under water
+            if (gLakituState[0].goalPos[1] < 1024.0) { // if camera under water
                 return NULL;
             }
             if (save_file_get_star_flags(gCurrSaveFileNum - 1, 2) & 1) { // first level in JRB complete
@@ -841,13 +820,7 @@ Gfx *movtex_gen_list(s16 *movtexVerts, struct MovtexObject *movtexList, s8 attrL
     }
 
     gSPDisplayList(gfx++, movtexList->beginDl);
-    gDPSetTextureImage(
-        gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, gMovtexIdToTexture[movtexList->textureId]);
-    gDPTileSync(gfx++);
-    gDPSetTile(gfx++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0, 7, 0, G_TX_WRAP,
-            G_TX_NOMASK, G_TX_NOLOD, G_TX_WRAP, G_TX_NOMASK, G_TX_NOLOD);
-    gDPLoadSync(gfx++);
-    gDPLoadBlock(gfx++, 7, 0, 0, 1023, 256);
+    gLoadBlockTexture(gfx++, 32, 32, G_IM_FMT_RGBA, gMovtexIdToTexture[movtexList->textureId]);
     gSPVertex(gfx++, VIRTUAL_TO_PHYSICAL2(verts), movtexList->vtx_count, 0);
     gSPDisplayList(gfx++, movtexList->triDl);
     gSPDisplayList(gfx++, movtexList->endDl);

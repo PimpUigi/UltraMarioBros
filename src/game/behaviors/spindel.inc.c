@@ -64,7 +64,7 @@ void bhv_spindel_loop(void) {
         o->oMoveAnglePitch += o->oAngleVelPitch;
 
         if (absf_2(o->oMoveAnglePitch & 0x1fff) < 800.0f && o->oAngleVelPitch != 0) {
-            PlaySound2(SOUND_GENERAL2_SPINDEL_ROLL);
+            cur_obj_play_sound_2(SOUND_GENERAL2_SPINDEL_ROLL);
         }
 
         sp1C = sins(o->oMoveAnglePitch * 4) * 23.0;
@@ -74,6 +74,6 @@ void bhv_spindel_loop(void) {
         o->oPosY = o->oHomeY + sp1C;
 
         if (o->oTimer + 1 == sp18 * 8)
-            func_8027F440(1, o->oPosX, o->oPosY, o->oPosZ);
+            set_camera_shake_from_point(SHAKE_POS_SMALL, o->oPosX, o->oPosY, o->oPosZ);
     }
 }

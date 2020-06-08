@@ -12,7 +12,7 @@ struct ObjectHitbox sMetalBoxHitbox = {
     /* hurtboxHeight: */ 300,
 };
 
-s32 func_802B0C54(f32 a0, f32 a1) {
+s32 check_if_moving_over_floor(f32 a0, f32 a1) {
     struct Surface *sp24;
     f32 sp20 = o->oPosX + sins(o->oMoveAngleYaw) * a1;
     f32 floorHeight;
@@ -28,19 +28,19 @@ void bhv_pushable_loop(void) {
     UNUSED s16 unused;
     s16 sp1C;
     int i;
-    set_object_hitbox(o, &sMetalBoxHitbox);
+    obj_set_hitbox(o, &sMetalBoxHitbox);
     for (i = 0; i < activePlayers; i++) {
         o->oForwardVel = 0.0f;
-        if (are_objects_collided(o, gMarioStates[i].marioObj) && gMarioStates[i].flags & 0x80000000) {
-            sp1C = angle_to_object(o, gMarioStates[i].marioObj);
+        if (obj_check_if_collided_with_object(o, gMarioStates[i].marioObj) && gMarioStates[i].flags & 0x80000000) {
+            sp1C = obj_angle_to_object(o, gMarioStates[i].marioObj);
             if (abs_angle_diff(sp1C, gMarioStates[i].marioObj->oMoveAngleYaw) > 0x4000) {
                 o->oMoveAngleYaw = (s16)((gMarioStates[i].marioObj->oMoveAngleYaw + 0x2000) & 0xc000);
-                if (func_802B0C54(8.0f, 150.0f)) {
+                if (check_if_moving_over_floor(8.0f, 150.0f)) {
                     o->oForwardVel = 4.0f;
-                    PlaySound(SOUND_ENV_METAL_BOX_PUSH);
+                    cur_obj_play_sound_1(SOUND_ENV_METAL_BOX_PUSH);
                 }
             }
         }
-        obj_move_using_fvel_and_gravity();
+        cur_obj_move_using_fvel_and_gravity();
     }
 }

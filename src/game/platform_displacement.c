@@ -4,7 +4,6 @@
 #include "platform_displacement.h"
 #include "engine/math_util.h"
 #include "object_helpers.h"
-#include "object_helpers2.h"
 #include "mario.h"
 #include "engine/behavior_script.h"
 #include "level_update.h"
@@ -32,32 +31,32 @@ void update_mario_platform(void) {
     int i;
     for (i = 0; i < activePlayers; i++) {
         if (gMarioObject != NULL) {
-            marioX = gMarioStates[i].marioObj->oPosX;
-            marioY = gMarioStates[i].marioObj->oPosY;
-            marioZ = gMarioStates[i].marioObj->oPosZ;
-            floorHeight = find_floor(marioX, marioY, marioZ, &floor);
+        marioX = gMarioStates[i].marioObj->oPosX;
+        marioY = gMarioStates[i].marioObj->oPosY;
+        marioZ = gMarioStates[i].marioObj->oPosZ;
+        floorHeight = find_floor(marioX, marioY, marioZ, &floor);
 
-            if (absf(marioY - floorHeight) < 4.0f) {
-                awayFromFloor = 0;
-            } else {
-                awayFromFloor = 1;
-            }
+        if (absf(marioY - floorHeight) < 4.0f) {
+            awayFromFloor = 0;
+        } else {
+            awayFromFloor = 1;
+        }
 
-            switch (awayFromFloor) {
-                case 1:
+        switch (awayFromFloor) {
+            case 1:
+                gMarioPlatform[i] = NULL;
+                gMarioStates[i].marioObj->platform = NULL;
+                break;
+
+            case 0:
+                if (floor != NULL && floor->object != NULL) {
+                    gMarioPlatform[i] = floor->object;
+                    gMarioStates[i].marioObj->platform = floor->object;
+                } else {
                     gMarioPlatform[i] = NULL;
                     gMarioStates[i].marioObj->platform = NULL;
-                    break;
-
-                case 0:
-                    if (floor != NULL && floor->object != NULL) {
-                        gMarioPlatform[i] = floor->object;
-                        gMarioStates[i].marioObj->platform = floor->object;
-                    } else {
-                        gMarioPlatform[i] = NULL;
-                        gMarioStates[i].marioObj->platform = NULL;
-                    }
-                    break;
+                }
+                break;
             }
         }
     }
@@ -157,9 +156,7 @@ void apply_platform_displacement(u32 isMario, struct Object *platform) {
         gMarioStates[isMario-1].platformDisplacement[0] = x - gMarioStates[isMario-1].pos[0];
         gMarioStates[isMario-1].platformDisplacement[1] = y - gMarioStates[isMario-1].pos[1];
         gMarioStates[isMario-1].platformDisplacement[2] = z - gMarioStates[isMario-1].pos[2];
-
         set_mario_pos(x, y, z, isMario-1);
-
     } else {
         gCurrentObject->oPosX = x;
         gCurrentObject->oPosY = y;

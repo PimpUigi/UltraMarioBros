@@ -11,7 +11,7 @@ struct SpawnInfo;
  */
 #define TIME_STOP_UNKNOWN_0         (1 << 0)
 #define TIME_STOP_ENABLED           (1 << 1)
-#define TIME_STOP_UNKNOWN_2         (1 << 2)
+#define TIME_STOP_DIALOG            (1 << 2)
 #define TIME_STOP_MARIO_AND_DOORS   (1 << 3)
 #define TIME_STOP_ALL_OBJECTS       (1 << 4)
 #define TIME_STOP_MARIO_OPENED_DOOR (1 << 5)
@@ -86,7 +86,7 @@ extern struct Object *gMarioObject;
 extern struct Object *gLuigiObject;
 extern struct Object *gCurrentObject;
 
-extern uintptr_t *gBehCommand;
+extern const BehaviorScript *gCurBhvCommand;
 extern s16 gPrevFrameObjectCount;
 
 extern s32 gSurfaceNodesAllocated;
@@ -95,6 +95,23 @@ extern s32 gNumStaticSurfaceNodes;
 extern s32 gNumStaticSurfaces;
 
 extern struct MemoryPool *gObjectMemoryPool;
+
+extern s16 gCheckingSurfaceCollisionsForCamera;
+extern s16 gFindFloorIncludeSurfaceIntangible;
+extern s16 *gEnvironmentRegions;
+extern s32 gEnvironmentLevels[20];
+extern s8 gDoorAdjacentRooms[60][2];
+extern s16 gMarioCurrentRoom[2];
+extern s16 D_8035FEE2;
+extern s16 D_8035FEE4;
+extern s16 gTHIWaterDrained;
+extern s16 gTTCSpeedSetting;
+extern s16 gMarioShotFromCannon;
+extern s16 gCCMEnteredSlide;
+extern s16 gNumRoomedObjectsInMarioRoom;
+extern s16 gNumRoomedObjectsNotInMarioRoom;
+extern s16 gWDWWaterLevelChanging;
+extern s16 gMarioOnMerryGoRound;
 
 
 void bhv_mario_update(void);

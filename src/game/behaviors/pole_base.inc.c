@@ -1,4 +1,4 @@
 // pole_base.inc.c
 
-void BehClimbDetectLoop(void) {
+void bhv_pole_base_loop(void) {
 }

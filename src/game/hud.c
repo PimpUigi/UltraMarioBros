@@ -1,8 +1,7 @@
 #include <ultra64.h>
 
 #include "sm64.h"
-#include "display.h"
-#include "game.h"
+#include "game_init.h"
 #include "level_update.h"
 #include "camera.h"
 #include "print.h"
@@ -26,7 +25,7 @@ struct PowerMeterHUD {
     f32 unused;
 };
 
-struct UnusedStruct803314F0 {
+struct UnusedHUDStruct {
     u32 unused1;
     u16 unused2;
     u16 unused3;
@@ -40,25 +39,27 @@ struct CameraHUD {
 // When the HUD is rendered this value is 8, full health.
 static s16 sPowerMeterStoredHealth[2];
 
-static struct PowerMeterHUD sPowerMeterHUD[2] = { {
-                                                      POWER_METER_HIDDEN,
-                                                      26,
-                                                      100,
-                                                      1.0,
-                                                  },
-                                                  {
-                                                      POWER_METER_HIDDEN,
-                                                      26,
-                                                      100,
-                                                      1.0,
-                                                  } };
+static struct PowerMeterHUD sPowerMeterHUD[2] =  { 
+{
+    POWER_METER_HIDDEN,
+    26,
+    100,
+    1.0,
+    },
+    {
+    POWER_METER_HIDDEN,
+    26,
+    100,
+    1.0,
+    } 
+};
 
 // Power Meter timer that keeps counting when it's visible.
 // Gets reset when the health is filled and stops counting
 // when the power meter is hidden.
 s32 sPowerMeterVisibleTimer[2] = { 0, 0 };
 
-static struct UnusedStruct803314F0 unused803314F0 = { 0x00000000, 0x000A, 0x0000 };
+static struct UnusedHUDStruct sUnusedHUDValues = { 0x00, 0x0A, 0x00 };
 
 static struct CameraHUD sCameraHUD = { CAM_STATUS_NONE };
 
@@ -78,17 +79,15 @@ void render_hud_tex_lut(s32 x, s32 y, u8 *texture) {
  */
 void render_hud_small_tex_lut(s32 x, s32 y, u8 *texture) {
     gDPSetTile(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 0, 0, G_TX_LOADTILE, 0,
-               (G_TX_NOMIRROR | G_TX_WRAP), G_TX_NOMASK, G_TX_NOLOD, (G_TX_NOMIRROR | G_TX_WRAP),
-               G_TX_NOMASK, G_TX_NOLOD);
+                G_TX_WRAP | G_TX_NOMIRROR, G_TX_NOMASK, G_TX_NOLOD, G_TX_WRAP | G_TX_NOMIRROR, G_TX_NOMASK, G_TX_NOLOD);
     gDPTileSync(gDisplayListHead++);
     gDPSetTile(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 2, 0, G_TX_RENDERTILE, 0,
-               (G_TX_NOMIRROR | G_TX_CLAMP), 3, G_TX_NOLOD, (G_TX_NOMIRROR | G_TX_CLAMP), 3,
-               G_TX_NOLOD);
-    gDPSetTileSize(gDisplayListHead++, G_TX_RENDERTILE, 0, 0, 28, 28);
+                G_TX_CLAMP, 3, G_TX_NOLOD, G_TX_CLAMP, 3, G_TX_NOLOD);
+    gDPSetTileSize(gDisplayListHead++, G_TX_RENDERTILE, 0, 0, (8 - 1) << G_TEXTURE_IMAGE_FRAC, (8 - 1) << G_TEXTURE_IMAGE_FRAC);
     gDPPipeSync(gDisplayListHead++);
     gDPSetTextureImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, texture);
     gDPLoadSync(gDisplayListHead++);
-    gDPLoadBlock(gDisplayListHead++, G_TX_LOADTILE, 0, 0, 63, 1024);
+    gDPLoadBlock(gDisplayListHead++, G_TX_LOADTILE, 0, 0, 8 * 8 - 1, CALC_DXT(8, G_IM_SIZ_16b_BYTES));
     gSPTextureRectangle(gDisplayListHead++, x << 2, y << 2, (x + 7) << 2, (y + 7) << 2, G_TX_RENDERTILE,
                         0, 0, 4 << 10, 1 << 10);
 }
@@ -105,7 +104,7 @@ void render_power_meter_health_segment(s16 numHealthWedges) {
     gDPSetTextureImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1,
                        (*healthLUT)[numHealthWedges - 1]);
     gDPLoadSync(gDisplayListHead++);
-    gDPLoadBlock(gDisplayListHead++, G_TX_LOADTILE, 0, 0, 1023, 256);
+    gDPLoadBlock(gDisplayListHead++, G_TX_LOADTILE, 0, 0, 32 * 32 - 1, CALC_DXT(32, G_IM_SIZ_16b_BYTES));
     gSP1Triangle(gDisplayListHead++, 0, 1, 2, 0);
     gSP1Triangle(gDisplayListHead++, 0, 2, 3, 0);
 }
@@ -127,7 +126,7 @@ void render_dl_power_meter(s16 numHealthWedges, int playerID) {
                 (f32) sPowerMeterHUD[playerID].y / (1 + playerID) - playerID * 19, 0);
 
     gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx++),
-              (G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_PUSH));
+              G_MTX_MODELVIEW | G_MTX_MUL | G_MTX_PUSH);
     gSPDisplayList(gDisplayListHead++, &dl_power_meter_base);
 
     if (numHealthWedges != 0) {
@@ -136,7 +135,7 @@ void render_dl_power_meter(s16 numHealthWedges, int playerID) {
         gSPDisplayList(gDisplayListHead++, &dl_power_meter_health_segments_end);
     }
 
-    gSPPopMatrix(gDisplayListHead++, 0);
+    gSPPopMatrix(gDisplayListHead++, G_MTX_MODELVIEW);
 }
 
 /**
@@ -219,8 +218,8 @@ void handle_power_meter_actions(s16 numHealthWedges, int playerID) {
     // Update to match health value
     sPowerMeterStoredHealth[playerID] = numHealthWedges;
 
-    // If mario is swimming, keep showing power meter
-    if (gPlayerStatusForCamera[playerID].action & ACT_FLAG_SWIMMING) {
+    // If Mario is swimming, keep power meter visible
+    if (gPlayerCameraState[playerID].action & ACT_FLAG_SWIMMING) {
         if (sPowerMeterHUD[playerID].animation == POWER_METER_HIDDEN
             || sPowerMeterHUD[playerID].animation == POWER_METER_EMPHASIZED) {
             sPowerMeterHUD[playerID].animation = POWER_METER_DEEMPHASIZING;
@@ -454,20 +453,21 @@ void render_hud(void) {
     } else {
 #ifdef VERSION_EU
         // basically create_dl_ortho_matrix but guOrtho screen width is different
+
         mtx = alloc_display_list(sizeof(*mtx));
         if (mtx == NULL) {
             return;
         }
         create_dl_identity_matrix();
-        guOrtho(mtx, -16.0f, 336.0f, 0, 240.0f, -10.0f, 10.0f, 1.0f);
-        gMoveWd(gDisplayListHead++, 0xE, 0, 0xFFFF);
-        gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx), 1);
-
+        guOrtho(mtx, -16.0f, SCREEN_WIDTH + 16, 0, SCREEN_HEIGHT, -10.0f, 10.0f, 1.0f);
+        gSPPerspNormalize(gDisplayListHead++, 0xFFFF);
+        gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx),
+                G_MTX_PROJECTION | G_MTX_MUL | G_MTX_NOPUSH);
 #else
         create_dl_ortho_matrix();
 #endif
 
-        if (gCurrentArea != NULL && gCurrentArea->camera->currPreset == CAMERA_PRESET_INSIDE_CANNON) {
+        if (gCurrentArea != NULL && gCurrentArea->camera->mode == CAMERA_MODE_INSIDE_CANNON) {
             render_hud_cannon_reticle();
         }
 

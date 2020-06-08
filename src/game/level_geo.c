@@ -13,7 +13,7 @@
  * Geo function that generates a displaylist for environment effects such as
  * snow or jetstream bubbles.
  */
-Gfx *geo_enfvx_main(s32 callContext, struct GraphNode *node, f32 c[4][4]) {
+Gfx *geo_envfx_main(s32 callContext, struct GraphNode *node, f32 c[4][4]) {
     Vec3s marioPos;
     Vec3s camFrom;
     Vec3s camTo;
@@ -27,19 +27,19 @@ Gfx *geo_enfvx_main(s32 callContext, struct GraphNode *node, f32 c[4][4]) {
                                             // casting to a local struct as necessary.
 
         if (GET_HIGH_U16_OF_32(*params) != gAreaUpdateCounter) {
-            UNUSED struct LevelCamera *sp2C = gCurGraphNodeCamera->config.levelCamera;
+            UNUSED struct Camera *sp2C = gCurGraphNodeCamera->config.camera;
             s32 snowMode = GET_LOW_U16_OF_32(*params);
 
-            vec3f_to_vec3s(camTo, gCurGraphNodeCamera->to);
-            vec3f_to_vec3s(camFrom, gCurGraphNodeCamera->from);
-            vec3f_to_vec3s(marioPos, gPlayerStatusForCamera[gCurrLevelCamera->cameraID].pos);
+            vec3f_to_vec3s(camTo, gCurGraphNodeCamera->focus);
+            vec3f_to_vec3s(camFrom, gCurGraphNodeCamera->pos);
+            vec3f_to_vec3s(marioPos, gPlayerCameraState[gCamera->cameraID].pos);
             particleList = envfx_update_particles(snowMode, marioPos, camTo, camFrom);
             if (particleList != NULL) {
                 Mtx *mtx = alloc_display_list(sizeof(*mtx));
 
                 gfx = alloc_display_list(2 * sizeof(*gfx));
                 mtxf_to_mtx(mtx, c);
-                gSPMatrix(&gfx[0], VIRTUAL_TO_PHYSICAL(mtx), G_MTX_MODELVIEW | G_MTX_LOAD);
+                gSPMatrix(&gfx[0], VIRTUAL_TO_PHYSICAL(mtx), G_MTX_MODELVIEW | G_MTX_LOAD | G_MTX_NOPUSH);
                 gSPBranchList(&gfx[1], VIRTUAL_TO_PHYSICAL(particleList));
                 execNode->fnNode.node.flags = (execNode->fnNode.node.flags & 0xFF) | 0x400;
             }
@@ -70,9 +70,9 @@ Gfx *geo_skybox_main(s32 callContext, struct GraphNode *node, UNUSED Mat4 *mtx) 
         struct GraphNodePerspective *camFrustum =
             (struct GraphNodePerspective *) camNode->fnNode.node.parent;
 
-        gfx = func_802CF414(0, backgroundNode->background, camFrustum->fov, gCameraStatus[luigiCamFirst].pos[0],
-                            gCameraStatus[luigiCamFirst].pos[1], gCameraStatus[luigiCamFirst].pos[2], gCameraStatus[luigiCamFirst].focus[0],
-                            gCameraStatus[luigiCamFirst].focus[1], gCameraStatus[luigiCamFirst].focus[2]);
+        gfx = create_skybox_facing_camera(0, backgroundNode->background, camFrustum->fov, gLakituState[luigiCamFirst].pos[0],
+                            gLakituState[luigiCamFirst].pos[1], gLakituState[luigiCamFirst].pos[2], gLakituState[luigiCamFirst].focus[0],
+                            gLakituState[luigiCamFirst].focus[1], gLakituState[luigiCamFirst].focus[2]);
     }
     return gfx;
 }

@@ -14,6 +14,8 @@
 #include "engine/surface_collision.h"
 #include "interaction.h"
 #include "camera.h"
+#include "level_table.h"
+#include "thread6.h"
 #include "object_helpers.h"
 #include "level_update.h"
 
@@ -36,7 +38,7 @@ void add_tree_leaf_particles(struct MarioState *m) {
             leafHeight = 100.0f;
         }
         if (m->pos[1] - m->floorHeight > leafHeight) {
-            m->particleFlags |= PARTICLE_LEAVES;
+            m->particleFlags |= PARTICLE_LEAF;
         }
     }
 }
@@ -45,7 +47,7 @@ void play_climbing_sounds(struct MarioState *m, s32 b) {
     s32 isOnTree = (m->usedObj->behavior == segmented_to_virtual(bhvTree));
 
     if (b == 1) {
-        if (is_anim_past_frame(m, 1) != 0) {
+        if (is_anim_past_frame(m, 1)) {
             play_sound(isOnTree ? SOUND_ACTION_CLIMB_UP_TREE : SOUND_ACTION_CLIMB_UP_POLE,
                        m->marioObj->soundOrigin);
         }
@@ -169,10 +171,13 @@ s32 act_holding_pole(struct MarioState *m) {
             //! The Shifting Sand Land palm tree check is done climbing up in
             // add_tree_leaf_particles, but not here, when climbing down.
             if (m->pos[1] - m->floorHeight > 100.0f) {
-                m->particleFlags |= PARTICLE_LEAVES;
+                m->particleFlags |= PARTICLE_LEAF;
             }
         }
         play_climbing_sounds(m, 2);
+#ifdef VERSION_SH
+        reset_rumble_timers();
+#endif
         func_80320A4C(1, marioObj->oMarioPoleYawVel / 0x100 * 2);
     } else {
         marioObj->oMarioPoleYawVel = 0;
@@ -189,7 +194,7 @@ s32 act_holding_pole(struct MarioState *m) {
 s32 act_climbing_pole(struct MarioState *m) {
     s32 sp24;
     struct Object *marioObj = m->marioObj;
-    s16 cameraAngle = m->thisPlayerCamera->trueYaw;
+    s16 cameraAngle = m->thisPlayerCamera->yaw;
     m->interactObj = m->pole;
     m->usedObj = m->pole;
 
@@ -229,7 +234,6 @@ s32 act_grab_pole_slow(struct MarioState *m) {
     m->interactObj = m->pole;
     m->usedObj = m->pole;
     play_sound_if_no_flag(m, SOUND_MARIO_WHOA, MARIO_MARIO_SOUND_PLAYED);
-    ;
 
     if (set_pole_position(m, 0.0f) == POLE_NONE) {
         set_mario_animation(m, MARIO_ANIM_GRAB_POLE_SHORT);
@@ -271,6 +275,7 @@ s32 act_top_of_pole_transition(struct MarioState *m) {
     struct Object *marioObj = m->marioObj;
     m->interactObj = m->pole;
     m->usedObj = m->pole;
+
     marioObj->oMarioPoleYawVel = 0;
     if (m->actionArg == 0) {
         set_mario_animation(m, MARIO_ANIM_START_HANDSTAND);
@@ -392,7 +397,13 @@ void update_hang_stationary(struct MarioState *m) {
 }
 
 s32 act_start_hanging(struct MarioState *m) {
+#ifdef VERSION_SH
+    if (m->actionTimer++ == 0) {
+        queue_rumble_data(5, 80);
+    }
+#else
     m->actionTimer++;
+#endif
 
     if ((m->input & INPUT_NONZERO_ANALOG) && m->actionTimer >= 31) {
         return set_mario_action(m, ACT_HANGING, 0);
@@ -471,6 +482,9 @@ s32 act_hang_moving(struct MarioState *m) {
 
     if (m->marioObj->header.gfx.unk38.animFrame == 12) {
         play_sound(SOUND_ACTION_HANGING_STEP, m->marioObj->soundOrigin);
+#ifdef VERSION_SH
+        queue_rumble_data(5, 30);
+#endif
     }
 
     if (is_anim_past_end(m)) {
@@ -506,14 +520,14 @@ s32 let_go_of_ledge(struct MarioState *m) {
     return set_mario_action(m, ACT_SOFT_BONK, 0);
 }
 
-void func_8025F0DC(struct MarioState *m) {
+void climb_up_ledge(struct MarioState *m) {
     set_mario_animation(m, MARIO_ANIM_IDLE_HEAD_LEFT);
     m->pos[0] += 14.0f * sins(m->faceAngle[1]);
     m->pos[2] += 14.0f * coss(m->faceAngle[1]);
     vec3f_copy(m->marioObj->header.gfx.pos, m->pos);
 }
 
-void func_8025F188(struct MarioState *m) {
+void update_ledge_climb_camera(struct MarioState *m) {
     f32 sp4;
 
     if (m->actionTimer < 14) {
@@ -535,7 +549,7 @@ void update_ledge_climb(struct MarioState *m, s32 animation, u32 endAction) {
     if (is_anim_at_end(m)) {
         set_mario_action(m, endAction, 0);
         if (endAction == ACT_IDLE) {
-            func_8025F0DC(m);
+            climb_up_ledge(m);
         }
     }
 }
@@ -606,7 +620,7 @@ s32 act_ledge_climb_slow(struct MarioState *m) {
     if (m->actionTimer >= 28
         && (m->input
             & (INPUT_NONZERO_ANALOG | INPUT_A_PRESSED | INPUT_OFF_FLOOR | INPUT_ABOVE_SLIDE))) {
-        func_8025F0DC(m);
+        climb_up_ledge(m);
         return check_common_action_exits(m);
     }
 
@@ -616,7 +630,7 @@ s32 act_ledge_climb_slow(struct MarioState *m) {
 
     update_ledge_climb(m, MARIO_ANIM_SLOW_LEDGE_GRAB, ACT_IDLE);
 
-    func_8025F188(m);
+    update_ledge_climb_camera(m);
     if (m->marioObj->header.gfx.unk38.animFrame == 17) {
         m->action = ACT_LEDGE_CLIMB_SLOW_2;
     }
@@ -649,7 +663,7 @@ s32 act_ledge_climb_fast(struct MarioState *m) {
     if (m->marioObj->header.gfx.unk38.animFrame == 8) {
         play_mario_landing_sound(m, SOUND_ACTION_TERRAIN_LANDING);
     }
-    func_8025F188(m);
+    update_ledge_climb_camera(m);
 
     return FALSE;
 }
@@ -663,6 +677,10 @@ s32 act_grabbed(struct MarioState *m) {
         m->faceAngle[1] = m->usedObj->oMoveAngleYaw;
         vec3f_copy(m->pos, m->marioObj->header.gfx.pos);
         m->grabtimer = 0;
+#ifdef VERSION_SH
+        queue_rumble_data(5, 60);
+#endif
+
         return set_mario_action(m, (m->forwardVel >= 0.0f) ? ACT_THROWN_FORWARD : ACT_THROWN_BACKWARD,
                                 thrown);
     }
@@ -678,10 +696,10 @@ s32 act_in_cannon(struct MarioState *m) {
 
     switch (m->actionState) {
         case 0:
-            m->marioObj->header.gfx.node.flags &= ~0x0001;
+            m->marioObj->header.gfx.node.flags &= ~GRAPH_RENDER_ACTIVE;
             m->usedObj->oInteractStatus = INT_STATUS_INTERACTED;
 
-            m->statusForCamera->unk1C[1] = 1;
+            m->statusForCamera->cameraEvent = CAM_EVENT_CANNON;
             m->statusForCamera->usedObj = m->usedObj;
 
             vec3f_set(m->vel, 0.0f, 0.0f, 0.0f);
@@ -735,17 +753,23 @@ s32 act_in_cannon(struct MarioState *m) {
                 m->pos[1] += 120.0f * sins(m->faceAngle[0]);
                 m->pos[2] += 120.0f * coss(m->faceAngle[0]) * coss(m->faceAngle[1]);
 
-                play_sound(SOUND_ACTION_UNKNOWN456, m->marioObj->soundOrigin);
+                play_sound(SOUND_ACTION_FLYING_FAST, m->marioObj->soundOrigin);
                 play_sound(SOUND_OBJ_POUNDING_CANNON, m->marioObj->soundOrigin);
 
-                m->marioObj->header.gfx.node.flags |= 0x0001;
+                m->marioObj->header.gfx.node.flags |= GRAPH_RENDER_ACTIVE;
 
                 set_mario_action(m, ACT_SHOT_FROM_CANNON, 0);
+#ifdef VERSION_SH
+                queue_rumble_data(60, 70);
+#endif
                 m->usedObj->oAction = 2;
                 return FALSE;
             } else {
                 if (m->faceAngle[0] != startFacePitch || m->faceAngle[1] != startFaceYaw) {
                     play_sound(SOUND_MOVING_AIM_CANNON, m->marioObj->soundOrigin);
+#ifdef VERSION_SH
+                    reset_rumble_timers_2(0);
+#endif
                 }
             }
     }
@@ -828,7 +852,7 @@ s32 act_bubbled(struct MarioState *m) {
     backupPos[2] = m->pos[2];
     // get dragged towards other player relative to how far away you are, give it a max speed so you
     // cant go through walls
-    if ((oMar = obj_nearest_object_with_behavior(segmented_to_virtual(bhvMario))) == NULL) {
+    if ((oMar = cur_obj_nearest_object_with_behavior(segmented_to_virtual(bhvMario))) == NULL) {
         oMar = gMarioStates[(m->thisPlayerCamera->cameraID) ^ 1].marioObj;
     }
     dist = dist_between_objects(oMar, m->marioObj);
@@ -963,11 +987,14 @@ s32 act_tornado_twirling(struct MarioState *m) {
 
     // Play sound on angle overflow
     if (prevTwirlYaw > m->twirlYaw) {
-        play_sound(SOUND_ACTION_SWISH2_2, m->marioObj->soundOrigin);
+        play_sound(SOUND_ACTION_TWIRL, m->marioObj->soundOrigin);
     }
 
     vec3f_copy(m->marioObj->header.gfx.pos, m->pos);
     vec3s_set(m->marioObj->header.gfx.angle, 0, m->faceAngle[1] + m->twirlYaw, 0);
+#ifdef VERSION_SH
+    reset_rumble_timers();
+#endif
 
     return FALSE;
 }
@@ -1008,7 +1035,7 @@ s32 mario_execute_automatic_action(struct MarioState *m) {
         case ACT_GRABBED:                cancel = act_grabbed(m);                break;
         case ACT_IN_CANNON:              cancel = act_in_cannon(m);              break;
         case ACT_TORNADO_TWIRLING:       cancel = act_tornado_twirling(m);       break;
-        case ACT_BUBBLED:                cancel = act_bubbled(m);              break;
+        case ACT_BUBBLED:                cancel = act_bubbled(m);                break;
     }
     /* clang-format on */
 

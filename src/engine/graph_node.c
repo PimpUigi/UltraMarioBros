@@ -187,18 +187,18 @@ struct GraphNodeSwitchCase *init_graph_node_switch_case(struct AllocOnlyPool *po
  * Allocates and returns a newly created camera node
  */
 struct GraphNodeCamera *init_graph_node_camera(struct AllocOnlyPool *pool,
-                                               struct GraphNodeCamera *graphNode, f32 *fromPos,
-                                               f32 *toPos, GraphNodeFunc func, s32 preset) {
+                                               struct GraphNodeCamera *graphNode, f32 *pos,
+                                               f32 *focus, GraphNodeFunc func, s32 mode) {
     if (pool != NULL) {
         graphNode = alloc_only_pool_alloc(pool, sizeof(struct GraphNodeCamera));
     }
 
     if (graphNode != NULL) {
         init_scene_graph_node_links(&graphNode->fnNode.node, GRAPH_NODE_TYPE_CAMERA);
-        vec3f_copy(graphNode->from, fromPos);
-        vec3f_copy(graphNode->to, toPos);
+        vec3f_copy(graphNode->pos, pos);
+        vec3f_copy(graphNode->focus, focus);
         graphNode->fnNode.func = func;
-        graphNode->config.preset = preset;
+        graphNode->config.mode = mode;
         graphNode->roll = 0;
         graphNode->rollScreen = 0;
 
@@ -497,9 +497,9 @@ struct GraphNodeBackground *init_graph_node_background(struct AllocOnlyPool *poo
  */
 struct GraphNodeHeldObject *init_graph_node_held_object(struct AllocOnlyPool *pool,
                                                         struct GraphNodeHeldObject *graphNode,
-                                                        struct GraphNodeObject *objNode,
+                                                        struct Object *objNode,
                                                         Vec3s translation,
-                                                        GraphNodeFunc nodeFunc, s32 unused) {
+                                                        GraphNodeFunc nodeFunc, s32 playerIndex) {
     if (pool != NULL) {
         graphNode = alloc_only_pool_alloc(pool, sizeof(struct GraphNodeHeldObject));
     }
@@ -509,7 +509,7 @@ struct GraphNodeHeldObject *init_graph_node_held_object(struct AllocOnlyPool *po
         vec3s_copy(graphNode->translation, translation);
         graphNode->objNode = objNode;
         graphNode->fnNode.func = nodeFunc;
-        graphNode->unused = unused;
+        graphNode->playerIndex = playerIndex;
 
         if (nodeFunc != NULL) {
             nodeFunc(GEO_CONTEXT_CREATE, &graphNode->fnNode.node, pool);
@@ -855,8 +855,8 @@ void geo_retreive_animation_translation(struct GraphNodeObject *obj, Vec3f posit
     s16 frame;
 
     if (animation != NULL) {
-        attribute = segmented_to_virtual(animation->index);
-        values = segmented_to_virtual(animation->values);
+        attribute = segmented_to_virtual((void *) animation->index);
+        values = segmented_to_virtual((void *) animation->values);
 
         frame = obj->unk38.animFrame;
 

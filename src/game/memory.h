@@ -20,13 +20,13 @@ struct MemoryPool;
 // Declaring this variable extern puts it in the wrong place in the bss order
 // when this file is included from memory.c (first instead of last). Hence,
 // ifdef hack. It was very likely subject to bss reordering originally.
-extern struct MemoryPool *D_8033A124;
+extern struct MemoryPool *gEffectsMemoryPool;
 #endif
 
 uintptr_t set_segment_base_addr(s32 segment, void *addr);
 void *get_segment_base_addr(s32 segment);
-void *segmented_to_virtual(void *addr);
-void *virtual_to_segmented(s32 segment, void *addr);
+void *segmented_to_virtual(const void *addr);
+void *virtual_to_segmented(u32 segment, const void *addr);
 void move_segment_table_to_dmem(void);
 
 void main_pool_init(void *start, void *end);
@@ -37,10 +37,12 @@ u32 main_pool_available(void);
 u32 main_pool_push_state(void);
 u32 main_pool_pop_state(void);
 
+extern void dma_read(u8 *dest, u8 *srcStart, u8 *srcEnd);
+
 void *load_segment(s32 segment, u8 *srcStart, u8 *srcEnd, u32 side);
 void *load_to_fixed_pool_addr(u8 *destAddr, u8 *srcStart, u8 *srcEnd);
 void *load_segment_decompress(s32 segment, u8 *srcStart, u8 *srcEnd);
-void *func_80278304(u32 segment, u8 *srcStart, u8 *srcEnd);
+void *load_segment_decompress_heap(u32 segment, u8 *srcStart, u8 *srcEnd);
 void load_engine_code_segment(void);
 
 struct AllocOnlyPool *alloc_only_pool_init(u32 size, u32 side);
@@ -53,6 +55,6 @@ void mem_pool_free(struct MemoryPool *pool, void *addr);
 
 void *alloc_display_list(u32 size);
 void func_80278A78(struct MarioAnimation *a, void *b, struct Animation *target);
-s32 func_80278AD4(struct MarioAnimation *a, u32 b);
+s32 load_patchable_table(struct MarioAnimation *a, u32 b);
 
 #endif

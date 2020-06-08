@@ -1,7 +1,7 @@
 #include <ultra64.h>
 
 #include "sm64.h"
-#include "game.h"
+#include "game_init.h"
 #include "mario.h"
 #include "memory.h"
 #include "save_file.h"
@@ -83,9 +83,7 @@ void format_integer(s32 n, s32 base, char *dest, s32 *totalLength, u8 width, s8 
 
         // Add leading pad to fit width.
         if (width > numDigits) {
-            for (len = 0; len < width - numDigits; len++) {
-                dest[len] = pad;
-            }
+            for (len = 0; len < width - numDigits; len++) dest[len] = pad;
 
             // Needs 1 length to print negative prefix.
             if (negative == TRUE) {
@@ -117,9 +115,7 @@ void format_integer(s32 n, s32 base, char *dest, s32 *totalLength, u8 width, s8 
     {
         numDigits = 1;
         if (width > numDigits) {
-            for (len = 0; len < width - numDigits; len++) {
-                dest[len] = pad;
-            }
+            for (len = 0; len < width - numDigits; len++) dest[len] = pad;
         }
         dest[len] = '0';
     }
@@ -185,7 +181,8 @@ void print_text_fmt_int(s32 x, s32 y, const char *str, s32 n) {
     s32 srcIndex = 0;
 
     // Don't continue if there is no memory to do so.
-    if ((sTextLabels[sTextLabelsCount] = (struct TextLabel *) mem_pool_alloc(D_8033A124, 60)) == NULL) {
+    if ((sTextLabels[sTextLabelsCount] = mem_pool_alloc(gEffectsMemoryPool,
+                                                        sizeof(struct TextLabel))) == NULL) {
         return;
     }
 
@@ -235,7 +232,8 @@ void print_text(s32 x, s32 y, const char *str) {
     s32 srcIndex = 0;
 
     // Don't continue if there is no memory to do so.
-    if ((sTextLabels[sTextLabelsCount] = (struct TextLabel *) mem_pool_alloc(D_8033A124, 60)) == NULL) {
+    if ((sTextLabels[sTextLabelsCount] = mem_pool_alloc(gEffectsMemoryPool,
+                                                        sizeof(struct TextLabel))) == NULL) {
         return;
     }
 
@@ -268,7 +266,8 @@ void print_text_centered(s32 x, s32 y, const char *str) {
     s32 srcIndex = 0;
 
     // Don't continue if there is no memory to do so.
-    if ((sTextLabels[sTextLabelsCount] = (struct TextLabel *) mem_pool_alloc(D_8033A124, 60)) == NULL) {
+    if ((sTextLabels[sTextLabelsCount] = mem_pool_alloc(gEffectsMemoryPool,
+                                                        sizeof(struct TextLabel))) == NULL) {
         return;
     }
 
@@ -359,7 +358,7 @@ s8 char_to_glyph_index(char c) {
  * Adds an individual glyph to be rendered.
  */
 void add_glyph_texture(s8 glyphIndex) {
-    u32 *glyphs = segmented_to_virtual(main_hud_lut);
+    const u8 *const *glyphs = segmented_to_virtual(main_hud_lut);
 
     gDPPipeSync(gDisplayListHead++);
     gDPSetTextureImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, 1, glyphs[glyphIndex]);
@@ -425,8 +424,8 @@ void render_text_labels(void) {
     }
 
     guOrtho(mtx, 0.0f, SCREEN_WIDTH, 0.0f, SCREEN_HEIGHT, -10.0f, 10.0f, 1.0f);
-    gSPPerspNormalize((Gfx *) (gDisplayListHead++), 0x0000FFFF);
-    gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx), G_MTX_PROJECTION | G_MTX_LOAD);
+    gSPPerspNormalize((Gfx *) (gDisplayListHead++), 0xFFFF);
+    gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx), G_MTX_PROJECTION | G_MTX_LOAD | G_MTX_NOPUSH);
     gSPDisplayList(gDisplayListHead++, dl_hud_img_begin);
 
     for (i = 0; i < sTextLabelsCount; i++) {
@@ -454,7 +453,7 @@ void render_text_labels(void) {
             }
         }
 
-        mem_pool_free(D_8033A124, (void *) sTextLabels[i]);
+        mem_pool_free(gEffectsMemoryPool, sTextLabels[i]);
     }
 
     gSPDisplayList(gDisplayListHead++, dl_hud_img_end);

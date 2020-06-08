@@ -1,11 +1,10 @@
 #include <ultra64.h>
 
 #include "sm64.h"
-#include "prevent_bss_reordering.h"
 #include "behavior_actions.h"
 #include "engine/behavior_script.h"
 #include "camera.h"
-#include "display.h"
+#include "game_init.h"
 #include "engine/math_util.h"
 #include "object_helpers.h"
 #include "mario_actions_cutscene.h"
@@ -15,6 +14,7 @@
 #include "obj_behaviors_2.h"
 #include "audio/external.h"
 #include "seq_ids.h"
+#include "dialog_ids.h"
 #include "level_update.h"
 #include "memory.h"
 #include "platform_displacement.h"
@@ -27,7 +27,7 @@
 #include "spawn_sound.h"
 #include "geo_misc.h"
 #include "save_file.h"
-#include "room.h"
+#include "level_table.h"
 
 extern struct Animation *wiggler_seg5_anims_0500C874[];
 extern struct Animation *spiny_egg_seg5_anims_050157E4[];
@@ -111,6 +111,12 @@ extern struct Animation *spiny_seg5_anims_05016EAC[];
 
 #define o gCurrentObject
 
+/**
+ * The treadmill that plays sounds and controls the others on random setting.
+ */
+struct Object *sMasterTreadmill;
+
+
 f32 sObjSavedPosX;
 f32 sObjSavedPosY;
 f32 sObjSavedPosZ;
@@ -139,8 +145,8 @@ static s16 obj_get_pitch_from_vel(void) {
  * move again.
  */
 static s32 obj_update_race_proposition_dialog(s16 dialogID) {
-    s32 dialogResponse = obj_update_dialog_with_cutscene(
-        2, DIALOG_UNK2_FLAG_0 | DIALOG_UNK2_LEAVE_TIME_STOP_ENABLED, CUTSCENE_DIALOG_2, dialogID);
+    s32 dialogResponse =
+        cur_obj_update_dialog_with_cutscene(2, DIALOG_UNK2_FLAG_0 | DIALOG_UNK2_LEAVE_TIME_STOP_ENABLED, CUTSCENE_RACE_DIALOG, dialogID);
 
     if (dialogResponse == 2) {
         set_mario_npc_dialog(0);
@@ -163,7 +169,9 @@ static s32 obj_is_near_to_and_facing_mario(f32 maxDist, s16 maxAngleDiff) {
     return FALSE;
 }
 
-static void obj_perform_position_op(s32 op) {
+//! Although having no return value, this function
+//! must be u32 to match other functions on -O2.
+static BAD_RETURN(u32) obj_perform_position_op(s32 op) {
     switch (op) {
         case POS_OP_SAVE_POSITION:
             sObjSavedPosX = o->oPosX;
@@ -281,7 +289,7 @@ static void platform_on_track_update_pos_or_spawn_ball(s32 ballIndex, f32 x, f32
     }
 }
 
-static void func_802F8D78(f32 arg0, f32 arg1) {
+static void cur_obj_spin_all_dimensions(f32 arg0, f32 arg1) {
     f32 val24;
     f32 val20;
     f32 val1C;
@@ -338,9 +346,9 @@ static void func_802F8D78(f32 arg0, f32 arg1) {
 
 static void obj_rotate_yaw_and_bounce_off_walls(s16 targetYaw, s16 turnAmount) {
     if (o->oMoveFlags & OBJ_MOVE_HIT_WALL) {
-        targetYaw = obj_reflect_move_angle_off_wall();
+        targetYaw = cur_obj_reflect_move_angle_off_wall();
     }
-    obj_rotate_yaw_toward(targetYaw, turnAmount);
+    cur_obj_rotate_yaw_toward(targetYaw, turnAmount);
 }
 
 static s16 obj_get_pitch_to_home(f32 latDistToHome) {
@@ -376,38 +384,38 @@ static s32 clamp_f32(f32 *value, f32 minimum, f32 maximum) {
     return TRUE;
 }
 
-static void func_802F927C(s32 arg0) {
-    set_obj_animation_and_sound_state(arg0);
-    func_8029F728();
+static void cur_obj_init_anim_extend(s32 arg0) {
+    cur_obj_init_animation_with_sound(arg0);
+    cur_obj_extend_animation_if_at_end();
 }
 
-static s32 func_802F92B0(s32 arg0) {
-    set_obj_animation_and_sound_state(arg0);
-    return func_8029F788();
+static s32 cur_obj_init_anim_and_check_if_end(s32 arg0) {
+    cur_obj_init_animation_with_sound(arg0);
+    return cur_obj_check_if_near_animation_end();
 }
 
-static s32 func_802F92EC(s32 arg0, s32 arg1) {
-    set_obj_animation_and_sound_state(arg0);
-    return obj_check_anim_frame(arg1);
+static s32 cur_obj_init_anim_check_frame(s32 arg0, s32 arg1) {
+    cur_obj_init_animation_with_sound(arg0);
+    return cur_obj_check_anim_frame(arg1);
 }
 
-static s32 func_802F932C(s32 arg0) {
-    if (func_8029F828()) {
-        set_obj_animation_and_sound_state(arg0);
+static s32 cur_obj_set_anim_if_at_end(s32 arg0) {
+    if (cur_obj_check_if_at_animation_end()) {
+        cur_obj_init_animation_with_sound(arg0);
         return TRUE;
     }
     return FALSE;
 }
 
-static s32 func_802F9378(s8 arg0, s8 arg1, u32 sound) {
+static s32 cur_obj_play_sound_at_anim_range(s8 arg0, s8 arg1, u32 sound) {
     s32 val04;
 
     if ((val04 = o->header.gfx.unk38.animAccel / 0x10000) <= 0) {
         val04 = 1;
     }
 
-    if (obj_check_anim_frame_in_range(arg0, val04) || obj_check_anim_frame_in_range(arg1, val04)) {
-        PlaySound2(sound);
+    if (cur_obj_check_anim_frame_in_range(arg0, val04) || cur_obj_check_anim_frame_in_range(arg1, val04)) {
+        cur_obj_play_sound_2(sound);
         return TRUE;
     }
 
@@ -508,15 +516,15 @@ static void obj_roll_to_match_yaw_turn(s16 targetYaw, s16 maxRoll, s16 rollSpeed
 }
 
 static s16 random_linear_offset(s16 base, s16 range) {
-    return base + (s16)(range * RandomFloat());
+    return base + (s16)(range * random_float());
 }
 
 static s16 random_mod_offset(s16 base, s16 step, s16 mod) {
-    return base + step * (RandomU16() % mod);
+    return base + step * (random_u16() % mod);
 }
 
 static s16 obj_random_fixed_turn(s16 delta) {
-    return o->oMoveAngleYaw + (s16) RandomSign() * delta;
+    return o->oMoveAngleYaw + (s16) random_sign() * delta;
 }
 
 /**
@@ -600,10 +608,11 @@ static s32 obj_resolve_object_collisions(s32 *targetYaw) {
     if (o->numCollidedObjs>4){
         o->numCollidedObjs = 4;
     }
+
     if (o->numCollidedObjs != 0) {
         for (i = 0; i < o->numCollidedObjs; i++) {
-            otherObject = o->collidedObjs[i];
-            if ((otherObject != gMarioObject)) {
+            otherObject = o->collidedObjs[0];
+            if (otherObject != gMarioObject) {
                 //! If one object moves after collisions are detected and this code
                 //  runs, the objects can move toward each other (transport cloning)
 
@@ -639,7 +648,7 @@ static s32 obj_resolve_object_collisions(s32 *targetYaw) {
 
 static s32 obj_bounce_off_walls_edges_objects(s32 *targetYaw) {
     if (o->oMoveFlags & OBJ_MOVE_HIT_WALL) {
-        *targetYaw = obj_reflect_move_angle_off_wall();
+        *targetYaw = cur_obj_reflect_move_angle_off_wall();
     } else if (o->oMoveFlags & OBJ_MOVE_HIT_EDGE) {
         *targetYaw = (s16)(o->oMoveAngleYaw + 0x8000);
     } else if (!obj_resolve_object_collisions(targetYaw)) {
@@ -652,7 +661,7 @@ static s32 obj_bounce_off_walls_edges_objects(s32 *targetYaw) {
 static s32 obj_resolve_collisions_and_turn(s16 targetYaw, s16 turnSpeed) {
     obj_resolve_object_collisions(NULL);
 
-    if (obj_rotate_yaw_toward(targetYaw, turnSpeed)) {
+    if (cur_obj_rotate_yaw_toward(targetYaw, turnSpeed)) {
         return FALSE;
     } else {
         return TRUE;
@@ -662,26 +671,26 @@ static s32 obj_resolve_collisions_and_turn(s16 targetYaw, s16 turnSpeed) {
 static void obj_die_if_health_non_positive(void) {
     if (o->oHealth <= 0) {
         if (o->oDeathSound == 0) {
-            func_802A3034(SOUND_OBJ_DEFAULT_DEATH);
+            spawn_mist_particles_with_sound(SOUND_OBJ_DEFAULT_DEATH);
         } else if (o->oDeathSound > 0) {
-            func_802A3034(o->oDeathSound);
+            spawn_mist_particles_with_sound(o->oDeathSound);
         } else {
-            func_802A3004();
+            spawn_mist_particles();
         }
 
-        if (o->oNumLootCoins < 0) {
+        if ((s32)o->oNumLootCoins < 0) {
             spawn_object(o, MODEL_BLUE_COIN, bhvMrIBlueCoin);
         } else {
-            spawn_object_loot_yellow_coins(o, o->oNumLootCoins, 20.0f);
+            obj_spawn_loot_yellow_coins(o, o->oNumLootCoins, 20.0f);
         }
         // This doesn't do anything
-        spawn_object_loot_yellow_coins(o, o->oNumLootCoins, 20.0f);
+        obj_spawn_loot_yellow_coins(o, o->oNumLootCoins, 20.0f);
 
         if (o->oHealth < 0) {
-            obj_hide();
-            obj_become_intangible();
+            cur_obj_hide();
+            cur_obj_become_intangible();
         } else {
-            mark_object_for_deletion(o);
+            obj_mark_for_deletion(o);
         }
     }
 }
@@ -708,11 +717,11 @@ static void obj_set_knockback_action(s32 attackType) {
     }
 
     o->oFlags &= ~OBJ_FLAG_SET_FACE_YAW_TO_MOVE_YAW;
-    o->oMoveAngleYaw = angle_to_object(gMarioObject, o);
+    o->oMoveAngleYaw = obj_angle_to_object(gMarioObject, o);
 }
 
 static void obj_set_squished_action(void) {
-    PlaySound2(SOUND_OBJ_STOMPED);
+    cur_obj_play_sound_2(SOUND_OBJ_STOMPED);
     o->oAction = OBJ_ACT_SQUISHED;
 }
 
@@ -725,9 +734,9 @@ static s32 obj_die_if_above_lava_and_health_non_positive(void) {
     } else if (!(o->oMoveFlags & OBJ_MOVE_ABOVE_LAVA)) {
         if (o->oMoveFlags & OBJ_MOVE_ENTERED_WATER) {
             if (o->oWallHitboxRadius < 200.0f) {
-                PlaySound2(SOUND_OBJ_DIVING_INTO_WATER);
+                cur_obj_play_sound_2(SOUND_OBJ_DIVING_INTO_WATER);
             } else {
-                PlaySound2(SOUND_OBJ_DIVING_IN_WATER);
+                cur_obj_play_sound_2(SOUND_OBJ_DIVING_IN_WATER);
             }
         }
         return FALSE;
@@ -741,7 +750,7 @@ static s32 obj_handle_attacks(struct ObjectHitbox *hitbox, s32 attackedMarioActi
                               u8 *attackHandlers) {
     s32 attackType;
 
-    set_object_hitbox(o, hitbox);
+    obj_set_hitbox(o, hitbox);
 
     //! Die immediately if above lava
     if (obj_die_if_above_lava_and_health_non_positive()) {
@@ -803,10 +812,10 @@ static s32 obj_handle_attacks(struct ObjectHitbox *hitbox, s32 attackedMarioActi
 }
 
 static void obj_act_knockback(UNUSED f32 baseScale) {
-    obj_update_floor_and_walls();
+    cur_obj_update_floor_and_walls();
 
     if (o->header.gfx.unk38.curAnim != NULL) {
-        func_8029F728();
+        cur_obj_extend_animation_if_at_end();
     }
 
     //! Dies immediately if above lava
@@ -816,16 +825,16 @@ static void obj_act_knockback(UNUSED f32 baseScale) {
         obj_die_if_health_non_positive();
     }
 
-    obj_move_standard(-78);
+    cur_obj_move_standard(-78);
 }
 
 static void obj_act_squished(f32 baseScale) {
     f32 targetScaleY = baseScale * 0.3f;
 
-    obj_update_floor_and_walls();
+    cur_obj_update_floor_and_walls();
 
     if (o->header.gfx.unk38.curAnim != NULL) {
-        func_8029F728();
+        cur_obj_extend_animation_if_at_end();
     }
 
     if (approach_f32_ptr(&o->header.gfx.scale[1], targetScaleY, baseScale * 0.14f)) {
@@ -837,14 +846,14 @@ static void obj_act_squished(f32 baseScale) {
     }
 
     o->oForwardVel = 0.0f;
-    obj_move_standard(-78);
+    cur_obj_move_standard(-78);
 }
 
 static s32 obj_update_standard_actions(f32 scale) {
     if (o->oAction < 100) {
         return TRUE;
     } else {
-        obj_become_intangible();
+        cur_obj_become_intangible();
 
         switch (o->oAction) {
             case OBJ_ACT_HORIZONTAL_KNOCKBACK:
@@ -864,7 +873,7 @@ static s32 obj_update_standard_actions(f32 scale) {
 static s32 obj_check_attacks(struct ObjectHitbox *hitbox, s32 attackedMarioAction) {
     s32 attackType;
 
-    set_object_hitbox(o, hitbox);
+    obj_set_hitbox(o, hitbox);
 
     //! Dies immediately if above lava
     if (obj_die_if_above_lava_and_health_non_positive()) {
@@ -888,15 +897,15 @@ static s32 obj_check_attacks(struct ObjectHitbox *hitbox, s32 attackedMarioActio
 }
 
 static s32 obj_move_for_one_second(s32 endAction) {
-    obj_update_floor_and_walls();
-    func_8029F728();
+    cur_obj_update_floor_and_walls();
+    cur_obj_extend_animation_if_at_end();
 
     if (o->oTimer > 30) {
         o->oAction = endAction;
         return TRUE;
     }
 
-    obj_move_standard(-78);
+    cur_obj_move_standard(-78);
     return FALSE;
 }
 

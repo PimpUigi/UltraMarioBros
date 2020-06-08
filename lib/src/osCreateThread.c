@@ -1,6 +1,5 @@
 #include "libultra_internal.h"
 
-extern OSThread *D_8033489C;
 void __osCleanupThread(void);
 
 // Don't warn about pointer->u64 cast
@@ -18,10 +17,10 @@ void osCreateThread(OSThread *thread, OSId id, void (*entry)(void *), void *arg,
     thread->context.a0 = (u64) arg;
     thread->context.sp = (u64) sp - 16;
     thread->context.ra = (u64) __osCleanupThread;
-    tmp = 0x003FFF01;
+    tmp = OS_IM_ALL;
     thread->context.sr = 65283;
     thread->context.rcp = (tmp & 0x3f0000) >> 16;
-    thread->context.fpcsr = (u32) 0x01000800;   //remove other bit
+    thread->context.fpcsr = (u32) 0x01000800;
     thread->fp = 0;
     thread->state = OS_STATE_STOPPED;
     thread->flags = 0;

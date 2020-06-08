@@ -6,7 +6,6 @@ void __osContGetInitData(u8 *, OSContStatus *);
 
 u32 D_80334810 = 0; // probably initialized
 
-extern u32 D_80365D1C;
 extern u64 osClockRate;
 
 // these probably belong in EEPROMlongread or something
@@ -43,7 +42,11 @@ s32 osContInit(OSMesgQueue *mq, u8 *a1, OSContStatus *status) {
     sp78 = __osSiRawStartDma(0, D_80365CE0);
     osRecvMesg(mq, &mesg, OS_MESG_BLOCK);
     __osContGetInitData(a1, status);
+#ifdef VERSION_EU
+    D_80365D20 = 0;
+#else
     D_80365D20 = 255;
+#endif
     __osSiCreateAccessQueue();
     osCreateMesgQueue(&_osContMesgQueue, _osContMesgBuff, 1);
     return sp78;

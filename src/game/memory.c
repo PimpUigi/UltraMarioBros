@@ -5,7 +5,7 @@
 #define INCLUDED_FROM_MEMORY_C
 
 #include "decompress.h"
-#include "game.h"
+#include "game_init.h"
 #include "main.h"
 #include "segments.h"
 #include "memory.h"
@@ -42,15 +42,27 @@ struct MemoryBlock {
     u32 size;
 };
 
-static uintptr_t sSegmentTable[32];
+extern uintptr_t sSegmentTable[32];
+extern u32 sPoolFreeSpace;
+extern u8 *sPoolStart;
+extern u8 *sPoolEnd;
+extern struct MainPoolBlock *sPoolListHeadL;
+extern struct MainPoolBlock *sPoolListHeadR;
 
-static u32 sPoolFreeSpace;
-static u8 *sPoolStart;
-static u8 *sPoolEnd;
-static struct MainPoolBlock *sPoolListHeadL;
-static struct MainPoolBlock *sPoolListHeadR;
 
-struct MemoryPool *D_8033A124;
+/**
+ * Memory pool for small graphical effects that aren't connected to Objects.
+ * Used for colored text, paintings, and environmental snow and bubbles.
+ */
+struct MemoryPool *gEffectsMemoryPool;
+
+uintptr_t sSegmentTable[32];
+u32 sPoolFreeSpace;
+u8 *sPoolStart;
+u8 *sPoolEnd;
+struct MainPoolBlock *sPoolListHeadL;
+struct MainPoolBlock *sPoolListHeadR;
+
 
 static struct MainPoolState *gMainPoolState = NULL;
 
@@ -63,15 +75,15 @@ void *get_segment_base_addr(s32 segment) {
     return (void *) (sSegmentTable[segment] | 0x80000000);
 }
 
-void *segmented_to_virtual(void *addr) {
-    u32 segment = (uintptr_t) addr >> 24;
-    u32 offset = (uintptr_t) addr & 0x00FFFFFF;
+void *segmented_to_virtual(const void *addr) {
+    size_t segment = (uintptr_t) addr >> 24;
+    size_t offset = (uintptr_t) addr & 0x00FFFFFF;
 
     return (void *) ((sSegmentTable[segment] + offset) | 0x80000000);
 }
 
-void *virtual_to_segmented(s32 segment, void *addr) {
-    uintptr_t offset = ((uintptr_t) addr & 0x1FFFFFFF) - sSegmentTable[segment];
+void *virtual_to_segmented(u32 segment, const void *addr) {
+    size_t offset = ((uintptr_t) addr & 0x1FFFFFFF) - sSegmentTable[segment];
 
     return (void *) ((segment << 24) + offset);
 }
@@ -80,7 +92,7 @@ void move_segment_table_to_dmem(void) {
     s32 i;
 
     for (i = 0; i < 16; i++)
-        gMoveWd(gDisplayListHead++, 6, i * 4, sSegmentTable[i]);
+        gSPSegment(gDisplayListHead++, i, sSegmentTable[i]);
 }
 
 /**
@@ -147,14 +159,14 @@ u32 main_pool_free(void *addr) {
         }
         sPoolListHeadL = block;
         sPoolListHeadL->next = NULL;
-        sPoolFreeSpace += (u8 *) oldListHead - (u8 *) sPoolListHeadL;
+        sPoolFreeSpace += (uintptr_t) oldListHead - (uintptr_t) sPoolListHeadL;
     } else {
         while (oldListHead->prev != NULL) {
             oldListHead = oldListHead->prev;
         }
         sPoolListHeadR = block->next;
         sPoolListHeadR->prev = NULL;
-        sPoolFreeSpace += (u8 *) sPoolListHeadR - (u8 *) oldListHead;
+        sPoolFreeSpace += (uintptr_t) sPoolListHeadR - (uintptr_t) oldListHead;
     }
     return sPoolFreeSpace;
 }
@@ -317,7 +329,7 @@ void *load_segment_decompress(s32 segment, u8 *srcStart, u8 *srcEnd) {
     return dest;
 }
 
-void *func_80278304(u32 segment, u8 *srcStart, u8 *srcEnd) {
+void *load_segment_decompress_heap(u32 segment, u8 *srcStart, u8 *srcEnd) {
     UNUSED void *dest = NULL;
     u32 compSize = ALIGN16(srcEnd - srcStart);
     u8 *compressed = main_pool_alloc(compSize, MEMORY_POOL_RIGHT);
@@ -509,7 +521,8 @@ void *alloc_display_list(u32 size) {
 static struct MarioAnimDmaRelatedThing *func_802789F0(u8 *srcAddr) {
     struct MarioAnimDmaRelatedThing *sp1C = dynamic_dma_read(srcAddr, srcAddr + sizeof(u32),
                                                              MEMORY_POOL_LEFT);
-    u32 size = sp1C->count * sizeof(struct MarioAnimSub) + sizeof(u32) + sizeof(u8 *);
+    u32 size = sizeof(u32) + (sizeof(u8 *) - sizeof(u32)) + sizeof(u8 *) +
+               sp1C->count * sizeof(struct OffsetSizePair);
     main_pool_free(sp1C);
 
     sp1C = dynamic_dma_read(srcAddr, srcAddr + size, MEMORY_POOL_LEFT);
@@ -525,16 +538,17 @@ void func_80278A78(struct MarioAnimation *a, void *b, struct Animation *target) 
     a->targetAnim = target;
 }
 
-s32 func_80278AD4(struct MarioAnimation *a, u32 index) {
+s32 load_patchable_table(struct MarioAnimation *a, u32 index) {
     s32 ret = FALSE;
     struct MarioAnimDmaRelatedThing *sp20 = a->animDmaTable;
     u8 *addr;
     u32 size;
 
     if (index < sp20->count) {
-        addr = sp20->srcAddr + sp20->anim[index].offset;
-        size = sp20->anim[index].size;
-
+        do { 
+            addr = sp20->srcAddr + sp20->anim[index].offset;
+            size = sp20->anim[index].size;
+        } while (0);
         if (a->currentAnimAddr != addr) {
             dma_read((u8 *) a->targetAnim, addr, addr + size);
             a->currentAnimAddr = addr;

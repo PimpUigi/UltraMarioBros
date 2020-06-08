@@ -1,9 +1,11 @@
 #ifndef _TYPES_H_
 #define _TYPES_H_
+
 // This file contains various data types used in Super Mario 64 that don't yet
 // have an appropriate header.
 
 #include <ultra64.h>
+#include "macros.h"
 
 extern const u8 activePlayers;
 extern u8 luigiCamFirst;
@@ -11,6 +13,18 @@ extern u8 gameLagged;
 extern int inEnd;
 extern u8 inStarSelect;
 extern const u8 horizontal;
+
+// Certain functions are marked as having return values, but do not
+// actually return a value. This causes undefined behavior, which we'd rather
+// avoid on modern GCC. This only impacts -O2 and can matter for both the function
+// itself and functions that call it.
+#ifdef AVOID_UB
+    #define BAD_RETURN(cmd) void
+#else
+    #define BAD_RETURN(cmd) cmd
+#endif
+
+
 struct Controller
 {
   /*0x00*/ s16 rawStickX;       //
@@ -22,6 +36,9 @@ struct Controller
   /*0x12*/ u16 buttonPressed;
   /*0x14*/ OSContStatus *statusData;
   /*0x18*/ OSContPad *controllerData;
+#ifdef VERSION_SH
+  /*0x1C*/ int port;
+#endif
 };
 
 typedef f32 Vec2f[2];
@@ -32,6 +49,15 @@ typedef f32 Vec4f[4];
 typedef s16 Vec4s[4];
 
 typedef f32 Mat4[4][4];
+
+typedef uintptr_t GeoLayout;
+typedef uintptr_t LevelScript;
+typedef s16 Movtex;
+typedef s16 MacroObject;
+typedef s16 Collision;
+typedef s16 Trajectory;
+typedef s16 PaintingData;
+typedef uintptr_t BehaviorScript;
 
 enum SpTaskState {
     SPTASK_STATE_NOT_STARTED,
@@ -55,9 +81,6 @@ struct VblankHandler
     OSMesg msg;
 };
 
-// NOTE: Since ObjectNode is the first member of Object, it is difficult to determine
-// whether some of these pointers point to ObjectNode or Object.
-
 #define ANIM_FLAG_NOLOOP     (1 << 0) // 0x01
 #define ANIM_FLAG_FORWARD    (1 << 1) // 0x02
 #define ANIM_FLAG_2          (1 << 2) // 0x04
@@ -74,10 +97,12 @@ struct Animation {
     /*0x06*/ s16 unk06;
     /*0x08*/ s16 unk08;
     /*0x0A*/ s16 unk0A;
-    /*0x0C*/ void *values;
-    /*0x10*/ void *index;
+    /*0x0C*/ const s16 *values;
+    /*0x10*/ const u16 *index;
     /*0x14*/ u32 length; // only used with Mario animations to determine how much to load. 0 otherwise.
 };
+
+#define ANIMINDEX_NUMPARTS(animindex) (sizeof(animindex) / sizeof(u16) / 6 - 1)
 
 struct GraphNode
 {
@@ -101,7 +126,6 @@ struct GraphNodeObject_sub
     /*0x10 0x48*/ s32 animAccel;
 };
 
-// TODO this is the first member of ObjectNode/Object
 struct GraphNodeObject
 {
     /*0x00*/ struct GraphNode node;
@@ -124,6 +148,9 @@ struct ObjectNode
     struct ObjectNode *prev;
 };
 
+// NOTE: Since ObjectNode is the first member of Object, it is difficult to determine
+// whether some of these pointers point to ObjectNode or Object.
+
 struct Object
 {
     /*0x000*/ struct ObjectNode header;
@@ -141,6 +168,7 @@ struct Object
         s32 asS32[0x50];
         s16 asS16[0x50][2];
         f32 asF32[0x50];
+#if !IS_64_BIT
         s16 *asS16P[0x50];
         s32 *asS32P[0x50];
         struct Animation **asAnims[0x50];
@@ -149,19 +177,34 @@ struct Object
         struct Object *asObject[0x50];
         struct Surface *asSurface[0x50];
         void *asVoidPtr[0x50];
+        const void *asConstVoidPtr[0x50];
+#endif
     } rawData;
+#if IS_64_BIT
+    union {
+        s16 *asS16P[0x50];
+        s32 *asS32P[0x50];
+        struct Animation **asAnims[0x50];
+        struct Waypoint *asWaypoint[0x50];
+        struct ChainSegment *asChainSegment[0x50];
+        struct Object *asObject[0x50];
+        struct Surface *asSurface[0x50];
+        void *asVoidPtr[0x50];
+        const void *asConstVoidPtr[0x50];
+    } ptrData;
+#endif
     /*0x1C8*/ struct Object *unused1;
-    /*0x1CC*/ uintptr_t *behScript;
-    /*0x1D0*/ u32 stackIndex;
-    /*0x1D4*/ uintptr_t stack[8];
-    /*0x1F4*/ s16 unk1F4;
+    /*0x1CC*/ const BehaviorScript *curBhvCommand;
+    /*0x1D0*/ u32 bhvStackIndex;
+    /*0x1D4*/ uintptr_t bhvStack[8];
+    /*0x1F4*/ s16 bhvDelayTimer;
     /*0x1F6*/ s16 respawnInfoType;
     /*0x1F8*/ f32 hitboxRadius;
     /*0x1FC*/ f32 hitboxHeight;
     /*0x200*/ f32 hurtboxRadius;
     /*0x204*/ f32 hurtboxHeight;
     /*0x208*/ f32 hitboxDownOffset;
-    /*0x20C*/ void *behavior;
+    /*0x20C*/ const BehaviorScript *behavior;
     /*0x210*/ u32 unused2;
     /*0x214*/ struct Object *platform;
     /*0x218*/ void *collisionData;
@@ -212,20 +255,20 @@ struct Surface
 struct MarioBodyState
 {
     /*0x00*/ u32 action;
-    /*0x04*/ s8 capState;
+    /*0x04*/ s8 capState; /// see MarioCapGSCId
     /*0x05*/ s8 eyeState;
     /*0x06*/ s8 handState;
-    /*0x07*/ s8 unk07;
+    /*0x07*/ s8 wingFlutter; /// whether Mario's wing cap wings are fluttering
     /*0x08*/ s16 modelState;
     /*0x0A*/ s8 grabPos;
-    /*0x0B*/ u8 unk0B;
-    /*0x0C*/ Vec3s unkC;
-    /*0x12*/ Vec3s unk12;
-    /*0x18*/ Vec3f unk18;
+    /*0x0B*/ u8 punchState; /// 2 bits for type of punch, 6 bits for punch animation timer
+    /*0x0C*/ Vec3s torsoAngle;
+    /*0x12*/ Vec3s headAngle;
+    /*0x18*/ Vec3f heldObjLastPosition; /// also known as HOLP
     u8 padding[4];
 };
 
-struct MarioAnimSub
+struct OffsetSizePair
 {
     u32 offset;
     u32 size;
@@ -235,7 +278,7 @@ struct MarioAnimDmaRelatedThing
 {
     u32 count;
     u8 *srcAddr;
-    struct MarioAnimSub anim[1]; // dynamic size
+    struct OffsetSizePair anim[1]; // dynamic size
 };
 
 struct MarioAnimation
@@ -289,7 +332,7 @@ struct MarioState
     /*0x88*/ struct Object *marioObj;
     /*0x8C*/ struct SpawnInfo *spawnInfo;
     /*0x90*/ struct Area *area;
-    /*0x94*/ struct CameraPlayerStatus *statusForCamera;
+    /*0x94*/ struct PlayerCameraState *statusForCamera;
     /*0x98*/ struct MarioBodyState *marioBodyState;
     /*0x9C*/ struct Controller *controller;
     /*0xA0*/ struct MarioAnimation *animation;
@@ -310,18 +353,12 @@ struct MarioState
     /*0xC0*/ f32 quicksandDepth;
     /*0xC4*/ f32 unkC4;
     /*0xc8*/ Vec3f platformDisplacement;    //for inertia
-    /*0xd4*/ struct LevelCamera *thisPlayerCamera;
+    /*0xd4*/ struct Camera *thisPlayerCamera;
     /*0xd8*/ s16 sInvulnerable;
     /*0xDA*/ u8 sDelayInvincTimer;
     /*0xDC*/ struct Object *bubble;
     /*0xE0*/ struct Object *pole;
     /*0xe4*/ u8 grabtimer;
-};
-
-struct StructGeo802D2360
-{
-    s32 unk0;
-    s32 *unk4;
 };
 
 #endif

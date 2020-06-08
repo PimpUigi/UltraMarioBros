@@ -34,6 +34,9 @@ extern Vec3s gVec3sOne;
 // Whether the node type has a function pointer of type GraphNodeFunc
 #define GRAPH_NODE_TYPE_FUNCTIONAL            0x100
 
+// Type used for Bowser and an unused geo function in obj_behaviors.c
+#define GRAPH_NODE_TYPE_400                   0x400				
+
 // The discriminant for different types of geo nodes
 #define GRAPH_NODE_TYPE_ROOT                  0x001
 #define GRAPH_NODE_TYPE_ORTHO_PROJECTION      0x002
@@ -76,7 +79,7 @@ extern Vec3s gVec3sOne;
 // - for GEO_CONTEXT_CREATE it is the AllocOnlyPool from which the node was allocated
 // - for GEO_CONTEXT_RENDER or GEO_CONTEXT_HELD_OBJ it is the top of the float matrix stack with type Mat4
 // - for GEO_CONTEXT_AREA_* it is the root geo node
-typedef s32 (*GraphNodeFunc)(s32 callContext, struct GraphNode *node, void *context);
+typedef Gfx *(*GraphNodeFunc)(s32 callContext, struct GraphNode *node, void *context);
 
 /** An extension of a graph node that includes a function pointer.
  *  Many graph node types have an update function that gets called
@@ -189,15 +192,15 @@ struct GraphNodeCamera
 {
     /*0x00*/ struct FnGraphNode fnNode;
     /*0x18*/ union {
-        // When the node is created, a preset is assigned to the node.
-        // Later in geo_camera_preset_and_pos a LevelCamera is allocated,
-        // the preset is passed to the struct, and the field is overridden
+        // When the node is created, a mode is assigned to the node.
+        // Later in geo_camera_main a Camera is allocated,
+        // the mode is passed to the struct, and the field is overridden
         // by a pointer to the struct. Gotta save those 4 bytes.
-        s32 preset;
-        struct LevelCamera *levelCamera;
+        s32 mode;
+        struct Camera *camera;
     } config;
-    /*0x1C*/ Vec3f from;
-    /*0x28*/ Vec3f to;
+    /*0x1C*/ Vec3f pos;
+    /*0x28*/ Vec3f focus;
     /*0x34*/ void *matrixPtr; // pointer to look-at matrix of this camera as a Mat4
     /*0x38*/ s16 roll; // roll in look at matrix. Doesn't account for light direction unlike rollScreen.
     /*0x3A*/ s16 rollScreen; // rolls screen while keeping the light direction consistent
@@ -343,8 +346,8 @@ struct GraphNodeBackground
 struct GraphNodeHeldObject
 {
     /*0x00*/ struct FnGraphNode fnNode;
-    /*0x18*/ s32 unused;
-    /*0x1C*/ struct GraphNodeObject *objNode; // assumed type
+    /*0x18*/ s32 playerIndex;
+    /*0x1C*/ struct Object *objNode;
     /*0x20*/ Vec3s translation;
 };
 
@@ -402,7 +405,7 @@ struct GraphNodeGenerated *init_graph_node_generated(struct AllocOnlyPool *pool,
 struct GraphNodeBackground *init_graph_node_background(struct AllocOnlyPool *pool, struct GraphNodeBackground *sp1c,
     u16 sp22, GraphNodeFunc sp24, s32 sp28);
 struct GraphNodeHeldObject *init_graph_node_held_object(struct AllocOnlyPool *pool, struct GraphNodeHeldObject *sp1c,
-    struct GraphNodeObject *objNode, Vec3s translation, GraphNodeFunc nodeFunc, s32 unused);
+    struct Object *objNode, Vec3s translation, GraphNodeFunc nodeFunc, s32 playerIndex);
 
 struct GraphNode *geo_add_child(struct GraphNode *, struct GraphNode *);
 struct GraphNode *geo_remove_child(struct GraphNode *);

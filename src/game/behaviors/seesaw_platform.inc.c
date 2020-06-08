@@ -34,16 +34,16 @@ void bhv_seesaw_platform_update(void) {
     UNUSED s32 startPitch = o->oFaceAnglePitch;
     o->oFaceAnglePitch += (s32) o->oSeesawPlatformPitchVel;
     rotation = 0.0f;
+
     if (absf(o->oSeesawPlatformPitchVel) > 10.0f) {
-        PlaySound(SOUND_ENV_BOAT_ROCKING1);
+        cur_obj_play_sound_1(SOUND_ENV_BOAT_ROCKING1);
     }
 
     if ((gMarioStates[0].marioObj->platform == o) || (gMarioStates[1].marioObj->platform == o)) {
-        // Rotate toward mario
         for (i = 0; i < activePlayers; i++) {
             if (gMarioStates[i].marioObj->platform == o) {
                 o->oDistanceToMario = dist_between_objects(gCurrentObject, gMarioStates[i].marioObj);
-                o->oAngleToMario = angle_to_object(gCurrentObject, gMarioStates[i].marioObj);
+                o->oAngleToMario = obj_angle_to_object(gCurrentObject, gMarioStates[i].marioObj);
                 rotation += o->oDistanceToMario * coss(o->oAngleToMario - o->oMoveAngleYaw);
             }
         }

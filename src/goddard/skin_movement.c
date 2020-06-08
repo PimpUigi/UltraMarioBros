@@ -20,7 +20,7 @@ void Unknown801815E0(Mat4f *mtx) {
     scratchVec.x = (*mtx)[0][0];
     scratchVec.y = (*mtx)[0][1];
     scratchVec.z = (*mtx)[0][2];
-    into_unit_vec3f(&scratchVec);
+    gd_normalize_vec3f(&scratchVec);
     (*mtx)[0][0] = scratchVec.x;
     (*mtx)[0][1] = scratchVec.y;
     (*mtx)[0][2] = scratchVec.z;
@@ -28,7 +28,7 @@ void Unknown801815E0(Mat4f *mtx) {
     scratchVec.x = (*mtx)[1][0];
     scratchVec.y = (*mtx)[1][1];
     scratchVec.z = (*mtx)[1][2];
-    into_unit_vec3f(&scratchVec);
+    gd_normalize_vec3f(&scratchVec);
     (*mtx)[1][0] = scratchVec.x;
     (*mtx)[1][1] = scratchVec.y;
     (*mtx)[1][2] = scratchVec.z;
@@ -36,7 +36,7 @@ void Unknown801815E0(Mat4f *mtx) {
     scratchVec.x = (*mtx)[2][0];
     scratchVec.y = (*mtx)[2][1];
     scratchVec.z = (*mtx)[2][2];
-    into_unit_vec3f(&scratchVec);
+    gd_normalize_vec3f(&scratchVec);
     (*mtx)[2][0] = scratchVec.x;
     (*mtx)[2][1] = scratchVec.y;
     (*mtx)[2][2] = scratchVec.z;
@@ -48,17 +48,17 @@ void Unknown801815E0(Mat4f *mtx) {
 void func_80181760(struct ObjGroup *a0) {
     register f32 sp1C;
     register struct Links *link;
-    Mat4f *mtx;
+    struct ObjVertex *vtx;
 
     for (link = a0->link1C; link != NULL; link = link->next) {
-        mtx = (Mat4f *) link->obj;
+        vtx = (struct ObjVertex *) link->obj;
 
-        if ((sp1C = (*mtx)[3][3]) != 0.0f) {
-            (*mtx)[2][0] = (*mtx)[1][1] * sp1C;
-            (*mtx)[2][1] = (*mtx)[1][2] * sp1C;
-            (*mtx)[2][2] = (*mtx)[1][3] * sp1C;
+        if ((sp1C = vtx->scaleFactor) != 0.0f) {
+            vtx->pos.x = vtx->initPos.x * sp1C;
+            vtx->pos.y = vtx->initPos.y * sp1C;
+            vtx->pos.z = vtx->initPos.z * sp1C;
         } else {
-            (*mtx)[2][0] = (*mtx)[2][1] = (*mtx)[2][2] = 0.0f;
+            vtx->pos.x = vtx->pos.y = vtx->pos.z = 0.0f;
         }
     }
 }
@@ -93,7 +93,7 @@ void func_80181894(struct ObjJoint *joint) {
                 stackVec.x = curWeight->vec20.x;
                 stackVec.y = curWeight->vec20.y;
                 stackVec.z = curWeight->vec20.z;
-                func_80196430(&stackVec, &joint->matE8);
+                gd_rotate_and_translate_vec3f(&stackVec, &joint->matE8);
 
                 connectedVtx = curWeight->unk3C;
                 scaleFactor = curWeight->unk38;
@@ -117,12 +117,12 @@ void Unknown801819D0(struct ObjVertex *vtx) {
         localVec.y = vtx->pos.y;
         localVec.z = vtx->pos.z;
 
-        func_80196430(&localVec, &D_801B9EA8);
+        gd_rotate_and_translate_vec3f(&localVec, &D_801B9EA8);
         sSkinNetCurWeight->vec20.x = localVec.x;
         sSkinNetCurWeight->vec20.y = localVec.y;
         sSkinNetCurWeight->vec20.z = localVec.z;
 
-        vtx->unk3C -= sSkinNetCurWeight->unk38;
+        vtx->scaleFactor -= sSkinNetCurWeight->unk38;
     }
 }
 
@@ -150,7 +150,7 @@ void reset_weight(struct ObjWeight *weight) {
 void Unknown80181B88(struct ObjJoint *joint) {
     struct ObjGroup *group;
 
-    inverse_mat4(&joint->matE8, &D_801B9EA8);
+    gd_inverse_mat4f(&joint->matE8, &D_801B9EA8);
     D_801B9EE8 = joint;
     if ((group = joint->unk1F4) != NULL) {
         apply_to_obj_types_in_group(OBJ_TYPE_WEIGHTS, (applyproc_t) reset_weight, group);
