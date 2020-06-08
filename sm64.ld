@@ -288,6 +288,7 @@ SECTIONS
       BUILD_DIR/libultra.a:osSetThreadPri.o(.text);
       BUILD_DIR/libultra.a:osInitialize.o(.text);
       BUILD_DIR/libultra.a:osViSwapBuffer.o(.text);
+      BUILD_DIR/libultra.a:__osGetCurrFaultedThread.o(.text);
       BUILD_DIR/libultra.a:sqrtf.o(.text);
       BUILD_DIR/libultra.a:osContStartReadData.o(.text);
       BUILD_DIR/libultra.a:osContInit.o(.text);
