@@ -307,7 +307,7 @@ void bhv_mario_update(void) {
     struct Object *playerHurtbox;
     l = gCurrentObject == gLuigiObject;
     if (l) {
-        gCurrentObject->header.gfx.sharedChild = 0x807c0000;
+        gCurrentObject->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_LUIGI];
     }
     gMarioStates[l].numStars =
         save_file_get_total_star_count(gCurrSaveFileNum - 1, COURSE_MIN - 1, COURSE_MAX - 1);

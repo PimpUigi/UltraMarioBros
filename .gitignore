@@ -70,3 +70,6 @@ build/*
 !/sound/**/*custom*/**/*.aiff
 !/assets/**/*custom*.bin
 !/assets/**/*custom*/**/*.bin
+
+# Luigi - TODO: Remove repeated textures
+!/actors/luigi/*

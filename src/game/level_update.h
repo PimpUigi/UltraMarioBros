@@ -129,6 +129,7 @@ s32 lvl_init_from_save_file(s16, s32 levelNum);
 s32 lvl_set_current_level(s16, s32 levelNum);
 s32 lvl_play_the_end_screen_sound(s16, s32);
 
+extern s32 init_luigi(void);
 extern void repointF3D(u8 *data);
 extern int loadWord(u8 *luigiData);
 extern storeWord(u8 *luigiData, int b);

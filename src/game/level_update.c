@@ -1390,10 +1390,6 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
 }
 
 s32 lvl_init_from_save_file(UNUSED s16 arg0, s32 levelNum) {
-    u8 *marioGeo;
-    int i;
-    int t7;
-    int t8;
 #ifdef VERSION_EU
     s16 var = eu_get_language();
     switch (var) {
@@ -1427,66 +1423,7 @@ s32 lvl_init_from_save_file(UNUSED s16 arg0, s32 levelNum) {
     select_mario_cam_mode();
     set_yoshi_as_not_dead();
 
-    if (luigiData == NULL) {
-        luigiData = 0x80780000;
-        dma_read(0x80780000, _luigiSegmentRomStart, _luigiSegmentRomEnd);
-        marioGeo = gLoadedGraphNodes[1];
-        for (i = 0; i < 0x8000; i++) {
-            *(luigiData + i + 0x40000) = *(marioGeo + i);
-        }
-        i = 0;
-        while (i < 0x8000) {
-            t7 = loadWord((luigiData + i + 0x40000));
-            if (((t7 - (int) marioGeo) < 0x8000) && ((t7 - (int) marioGeo) >= 0)) {
-                storeWord((luigiData + i + 0x40000), ((t7 - (int) marioGeo + 0x807c0000)));
-            }
-
-            i += 4;
-        }
-        i = 0;
-        while (i < 0x2800) {
-            t7 = loadWord((luigiData + i + 0x40000));
-            if (((t7 - 0x04000000) < 0x100000) && ((t7 - 0x04000000) >= 0)) {
-                storeWord((luigiData + i + 0x40000), ((t7 - 0x04000000 + 0x00780000)));
-                repointF3D((t7 - 0x04000000 + 0x80780000));
-            }
-
-            i += 4;
-        }
-        storeWord(luigiData + 0x40030, 0x3e926666);
-    }
     return levelNum;
-}
-
-void repointF3D(u8 *data) {
-    while (TRUE) {
-        switch (*data) {
-            case 0xb8:
-                return;
-            case 0x03:
-            case 0xfd:
-            case 0x04:
-                if ((*(data + 4))) {
-                    storeWord(data + 4, loadWord(data + 4) - 0x04000000 + 0x00780000);
-                }
-                break;
-            case 0x06:
-                if ((*(data + 4))) {
-                    repointF3D(loadWord(data + 4) - 0x04000000 + 0x80780000);
-                    storeWord(data + 4, loadWord(data + 4) - 0x04000000 + 0x00780000);
-                }
-                break;
-        }
-        data += 8;
-    }
-}
-
-int loadWord(u8 *luigiData) {
-    return *((u32 *) luigiData);
-}
-
-int storeWord(u8 *luigiData, int b) {
-    *((u32 *) luigiData) = b;
 }
 
 s32 lvl_set_current_level(UNUSED s16 arg0, s32 levelNum) {

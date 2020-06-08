@@ -1817,9 +1817,6 @@ void init_mario(void) {
     int i;
     Vec3s capPos;
     struct Object *capObject;
-    u8 *marioGeo;
-    int t7;
-    int t8;
     unused80339F10 = 0;
 
     for (i = 0; i < activePlayers; i++) {
@@ -1914,35 +1911,6 @@ void init_mario(void) {
 
             capObject->oMoveAngleYaw = 0;
         }
-    }
-    luigiData = NULL;
-    if (luigiData == NULL) {
-        luigiData = 0x80780000;
-        dma_read(0x80780000, _luigiSegmentRomStart, _luigiSegmentRomEnd);
-        marioGeo = gLoadedGraphNodes[1];
-        for (i = 0; i < 0x8000; i++) {
-            *(luigiData + i + 0x40000) = *(marioGeo + i);
-        }
-        i = 0;
-        while (i < 0x8000) {
-            t7 = loadWord((luigiData + i + 0x40000));
-            if (((t7 - (int) marioGeo) < 0x8000) && ((t7 - (int) marioGeo) >= 0)) {
-                storeWord((luigiData + i + 0x40000), ((t7 - (int) marioGeo + 0x807c0000)));
-            }
-
-            i += 4;
-        }
-        i = 0;
-        while (i < 0x2800) {
-            t7 = loadWord((luigiData + i + 0x40000));
-            if (((t7 - 0x04000000) < 0x100000) && ((t7 - 0x04000000) >= 0)) {
-                storeWord((luigiData + i + 0x40000), ((t7 - 0x04000000 + 0x00780000)));
-                repointF3D((t7 - 0x04000000 + 0x80780000));
-            }
-
-            i += 4;
-        }
-        storeWord(luigiData + 0x40030, 0x3e926666);
     }
 }
 

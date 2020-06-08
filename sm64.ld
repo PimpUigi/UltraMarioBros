@@ -743,12 +743,6 @@ SECTIONS
       BUILD_DIR/levels/entry.o(.data);
    }
    END_SEG(entry)
-   
-   BEGIN_SEG(luigi, 0x10000000)
-   {
-      BUILD_DIR/asm/luigi_binary.o(.data);
-   }
-   END_SEG(luigi)
 
    /* load MIO0 and level data */
    MIO0_SEG(segment2, 0x02000000)

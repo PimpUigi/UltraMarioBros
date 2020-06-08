@@ -836,7 +836,7 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
                     if ((gMarioStates[luigiCamFirst].usedObj == obj->parentObj) && (gMarioStates[luigiCamFirst].usedObj->parentObj->oAction == 1)) {
                         obj->header.gfx.sharedChild = NULL;
                     } else {
-                        obj->header.gfx.sharedChild = gLoadedGraphNodes[0x7f];
+                        obj->header.gfx.sharedChild = gLoadedGraphNodes[MODEL_CANNON_BARREL];
                     }
                 }
             }
