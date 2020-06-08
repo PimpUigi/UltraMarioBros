@@ -1,6 +1,9 @@
 #ifndef _SEGMENTS_H
 #define _SEGMENTS_H
 
+/* Use expansion pack RAM */
+#define USE_EXT_RAM 1
+
 /*
  * Memory addresses for segments. Ideally, this header file would not be
  * needed, and the addresses would be defined in sm64.ld and linker-inserted
@@ -11,7 +14,7 @@
  * linker script syntax.
 */
 
-#ifdef USE_EXT_RAM /* Default: Runs out of memory quickly when importing custom assets. */
+#ifndef USE_EXT_RAM /* Default: Runs out of memory quickly when importing custom assets. */
 
 #define SEG_POOL_START   0x8005C000
 #define SEG_POOL_END     SEG_BUFFERS
@@ -49,7 +52,7 @@
 #define SEG_FRAMEBUFFERS 0x8029A800 // 0x0070800 in size
 #define SEG_POOL_START   0x8030B000 // 0x0165000 in size
 #define SEG_POOL_END     0x80800000
-#define SEG_POOL_END_4MB 0x80470000 // For the error message screen enhancement.
+#define SEG_POOL_END_4MB 0x80400000 // For the error message screen enhancement.
 #define SEG_GODDARD      SEG_POOL_START + 0x113000
 #endif
 
