@@ -109,7 +109,7 @@ void set_warp_transition_rgb(u8 red, u8 green, u8 blue) {
 
 void print_intro_text(void) {
     
-    print_text_centered(160, 0xd9, "By Kade Emanuar");
+    print_text_centered(160, 210, "By Kaze Emanuar");
 
     if ((gGlobalTimer & 0x1F) < 20) {
         if (gPlayer2Controller->controllerData == NULL || gPlayer1Controller->controllerData == NULL) {

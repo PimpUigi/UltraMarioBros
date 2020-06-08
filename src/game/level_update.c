@@ -1529,6 +1529,6 @@ s32 lvl_set_current_level(UNUSED s16 arg0, s32 levelNum) {
  * Play the "thank you so much for to playing my game" sound.
  */
 s32 lvl_play_the_end_screen_sound(UNUSED s16 arg0, UNUSED s32 arg1) {
-    print_text_centered(160, 0xe0, "By Kade Emanuar");
+    print_text_centered(160, 210, "By Kaze Emanuar");
     return 1;
 }

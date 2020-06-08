@@ -29,12 +29,12 @@ ALIGNED8 static const u8 texture_menu_dark_stone[] = {
 
 // 0x07001018 - 0x07002018
 ALIGNED8 static const u8 texture_menu_mario_save[] = {
-#include "../../textures/custom/level_menu/main_menu_seg7.01018.rgba16.inc.c"
+#include "../textures/custom/level_menu/main_menu_seg7.01018.rgba16.inc.c"
 };
 
 // 0x07002018 - 0x07003018
 ALIGNED8 static const u8 texture_menu_mario_new[] = {
-#include "../../textures/custom/level_menu/main_menu_seg7.02018.rgba16.inc.c"
+#include "../textures/custom/level_menu/main_menu_seg7.02018.rgba16.inc.c"
 };
 
 // 0x07003018 - 0x07003118

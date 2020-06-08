@@ -192,7 +192,7 @@ GRASS_FILES                  := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DI
 CUSTOM_TEXTURE_FILES         := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/custom/level_menu/*.png))
 
 # Misc 
-$(BUILD_DIR)/level/menu/leveldata.o: $(addprefix $(BUILD_DIR)/,$(CUSTOM_TEXTURE_FILES))
+$(BUILD_DIR)/levels/menu/leveldata.o: $(addprefix $(BUILD_DIR)/,$(CUSTOM_TEXTURE_FILES))
 
 # Texture Files
 $(BUILD_DIR)/bin/segment2.o: $(addprefix $(BUILD_DIR)/,$(SEGMENT2_FILES))
