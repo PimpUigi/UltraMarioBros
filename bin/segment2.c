@@ -83,7 +83,7 @@ ALIGNED8 static const u8 texture_hud_char_I[] = {
 };
 
 ALIGNED8 static const u8 texture_hud_char_J[] = {
-#include "textures/segment2/segment2.02600.rgba16.inc.c"
+#include "textures/segment2/custom/segment2.02600.rgba16.inc.c"
 };
 
 ALIGNED8 static const u8 texture_hud_char_K[] = {
@@ -111,7 +111,7 @@ ALIGNED8 static const u8 texture_hud_char_P[] = {
 };
 
 ALIGNED8 static const u8 texture_hud_char_Q[] = {
-#include "textures/segment2/segment2.03400.rgba16.inc.c"
+#include "textures/segment2/custom/segment2.03400.rgba16.inc.c"
 };
 
 ALIGNED8 static const u8 texture_hud_char_R[] = {
@@ -131,7 +131,7 @@ ALIGNED8 static const u8 texture_hud_char_U[] = {
 };
 
 ALIGNED8 static const u8 texture_hud_char_V[] = {
-#include "textures/segment2/segment2.03E00.rgba16.inc.c"
+#include "textures/segment2/custom/segment2.03E00.rgba16.inc.c"
 };
 
 ALIGNED8 static const u8 texture_hud_char_W[] = {
@@ -139,7 +139,7 @@ ALIGNED8 static const u8 texture_hud_char_W[] = {
 };
 
 ALIGNED8 static const u8 texture_hud_char_X[] = {
-#include "textures/segment2/segment2.04200.rgba16.inc.c"
+#include "textures/segment2/custom/segment2.04200.rgba16.inc.c"
 };
 
 ALIGNED8 static const u8 texture_hud_char_Y[] = {
@@ -147,7 +147,7 @@ ALIGNED8 static const u8 texture_hud_char_Y[] = {
 };
 
 ALIGNED8 static const u8 texture_hud_char_Z[] = {
-#include "textures/segment2/segment2.04600.rgba16.inc.c"
+#include "textures/segment2/custom/segment2.04600.rgba16.inc.c"
 };
 
 ALIGNED8 static const u8 texture_hud_char_apostrophe[] = {
@@ -199,7 +199,7 @@ ALIGNED8 static const u8 texture_hud_char_mario_head[] = {
 };
 
 ALIGNED8 static const u8 texture_hud_char_luigi_head[] = {
-#include "textures/segment2/segment2.luigiicon.rgba16.inc.c"
+#include "textures/segment2/custom/segment2.luigiicon.rgba16.inc.c"
 };
 
 ALIGNED8 static const u8 texture_hud_char_star[] = {

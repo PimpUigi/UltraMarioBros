@@ -5,7 +5,7 @@
 # obtain a list of segments from the *.c files in bin directory
 SEGMENTS := $(notdir $(basename $(wildcard bin/*.c))) $(addprefix $(VERSION)/,$(notdir $(basename $(wildcard bin/$(VERSION)/*.c)))) $(addsuffix _skybox,$(notdir $(basename $(wildcard textures/skyboxes/*.png))))
 ACTORS := $(filter %/,$(wildcard actors/*/))
-TEXTURE_DIRS := $(addprefix textures/,$(SEGMENTS)) $(ACTORS) textures/intro_raw
+TEXTURE_DIRS := $(addprefix textures/,$(SEGMENTS)) $(ACTORS) textures/intro_raw textures/segment2/custom textures/custom/level_menu
 
 # NOTE: textures assume naming convention "texture.<encoding>.png" generates "texture.<encoding>"
 
@@ -174,7 +174,7 @@ $(BUILD_DIR)/levels/ending/cake.inc.c: levels/ending/cake.png
 # --------------------------------------
 
 # Others
-SEGMENT2_FILES               := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/segment2/*.png))
+SEGMENT2_FILES               := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/segment2/*.png)) $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/segment2/custom/*.png))
 TITLE_SCREEN_BG_FILES        := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/title_screen_bg/*.png))
 SPOOKY_FILES                 := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/spooky/*.png))
 GENERIC_FILES                := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/generic/*.png))
@@ -189,6 +189,10 @@ SKY_FILES                    := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DI
 MACHINE_FILES                := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/machine/*.png))
 MOUNTAIN_FILES               := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/mountain/*.png))
 GRASS_FILES                  := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/grass/*.png))
+CUSTOM_TEXTURE_FILES         := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/custom/level_menu/*.png))
+
+# Misc 
+$(BUILD_DIR)/level/menu/leveldata.o: $(addprefix $(BUILD_DIR)/,$(CUSTOM_TEXTURE_FILES))
 
 # Texture Files
 $(BUILD_DIR)/bin/segment2.o: $(addprefix $(BUILD_DIR)/,$(SEGMENT2_FILES))
