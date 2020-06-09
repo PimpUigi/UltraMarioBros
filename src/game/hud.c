@@ -25,12 +25,6 @@ struct PowerMeterHUD {
     f32 unused;
 };
 
-struct UnusedHUDStruct {
-    u32 unused1;
-    u16 unused2;
-    u16 unused3;
-};
-
 struct CameraHUD {
     s16 status;
 };
@@ -42,13 +36,13 @@ static s16 sPowerMeterStoredHealth[2];
 static struct PowerMeterHUD sPowerMeterHUD[2] =  { 
 {
     POWER_METER_HIDDEN,
-    26,
+    30,
     100,
     1.0,
     },
     {
     POWER_METER_HIDDEN,
-    26,
+    30,
     100,
     1.0,
     } 
@@ -58,8 +52,6 @@ static struct PowerMeterHUD sPowerMeterHUD[2] =  {
 // Gets reset when the health is filled and stops counting
 // when the power meter is hidden.
 s32 sPowerMeterVisibleTimer[2] = { 0, 0 };
-
-static struct UnusedHUDStruct sUnusedHUDValues = { 0x00, 0x0A, 0x00 };
 
 static struct CameraHUD sCameraHUD = { CAM_STATUS_NONE };
 
@@ -265,12 +257,7 @@ void render_hud_power_meter(int playerID) {
     sPowerMeterVisibleTimer[playerID] += 1;
 }
 
-#ifdef VERSION_JP
-#define HUD_TOP_Y 210
-#else
-#define HUD_TOP_Y 206 + 16 - BORDER_HEIGHT * 2
-#endif
-
+#define HUD_TOP_Y 204 + 16 - BORDER_HEIGHT * 2
 /**
  * Renders the amount of lives Mario has.
  */
@@ -279,43 +266,47 @@ void render_hud_mario_lives(void) {
     int c = HUD_TOP_Y;
     for (i = 0; i < activePlayers; i++) {
         if (i == 0) {
-            print_text(4, c / (i + 1) - 8 * i, ","); // 'Mario Head' glyph
+            print_text(8, c / (i + 1) - 8 * i, ","); // 'Mario Head' glyph
         } else {
-            print_text(4, c / (i + 1) - 8 * i, "/"); // 'Mario Head' glyph
+            print_text(8, c / (i + 1) - 8 * i, "/"); // 'Luigi Head' glyph - uses beta key symbol
         }
-        print_text(20, c / (i + 1) - 8 * i, "*"); // 'X' glyph
-        print_text_fmt_int(36, c / (i + 1) - 8 * i, "%d", gMarioStates[i].numLives);
+        print_text(24, c / (i + 1) - 8 * i, "*"); // 'X' glyph
+        print_text_fmt_int(40, c / (i + 1) - 8 * i, "%d", gMarioStates[i].numLives);
     }
 }
 
+#define HUD_RIGHT_X 242
 /**
  * Renders the amount of coins collected.
  */
 void render_hud_coins(void) {
     int c = HUD_TOP_Y;
-    print_text(252, c / 2 - 8, "+"); // 'Mario Head' glyph
-    print_text(268, c / 2 - 8, "*"); // 'X' glyph
-    print_text_fmt_int(282, c / 2 - 8, "%d", gMarioStates[0].numCoins + gMarioStates[1].numCoins);
+    print_text(HUD_RIGHT_X, c / 2 - 8, "+"); // 'Coin' glyph
+    print_text(HUD_RIGHT_X + 16, c / 2 - 8, "*"); // 'X' glyph
+    print_text_fmt_int(HUD_RIGHT_X + 30, c / 2 - 8, "%d", gMarioStates[0].numCoins + gMarioStates[1].numCoins);
 }
-
-#ifdef VERSION_JP
-#define HUD_STARS_X 247
-#else
-#define HUD_STARS_X 242
-#endif
 
 /**
  * Renders the amount of stars collected.
- * Disables "X" glyph when Mario has 100 stars or more.
  */
 void render_hud_stars(void) {
-    if (gHudFlash == 1 && gGlobalTimer & 0x10) {
+    s16 yMove;
+
+    if (gHudFlash == 1 && gGlobalTimer % 10) {
         return;
     }
 
-    print_text(252, HUD_TOP_Y, "-"); // 'Mario Head' glyph
-    print_text(268, HUD_TOP_Y, "*"); // 'X' glyph
-    print_text_fmt_int(282, HUD_TOP_Y, "%d", gHudDisplay.stars);
+    if (gHudDisplay.stars >= 100) {
+        yMove = 0;
+    } else if (gHudDisplay.stars >= 10) { 
+        yMove = 12;
+    } else { 
+        yMove = 24;
+    }
+
+    print_text(HUD_RIGHT_X + yMove, HUD_TOP_Y, "-"); // 'Star' glyph
+    print_text(HUD_RIGHT_X + 16 + yMove, HUD_TOP_Y, "*"); // 'X' glyph
+    print_text_fmt_int(HUD_RIGHT_X + 30 + yMove, HUD_TOP_Y, "%d", gHudDisplay.stars);
 }
 
 /**
@@ -393,7 +384,7 @@ void render_hud_camera_status(void) {
             return;
         }
         cameraLUT = segmented_to_virtual(&main_hud_camera_lut);
-        x = 282;
+        x = 280;
         y = 88 + 8 - BORDER_HEIGHT + 120 * i;
 
         if (gMarioStates[i].thisPlayerCamera->hudStatus == CAM_STATUS_NONE) {
@@ -437,9 +428,6 @@ void render_hud_camera_status(void) {
  */
 void render_hud(void) {
     s16 hudDisplayFlags;
-#ifdef VERSION_EU
-    Mtx *mtx;
-#endif
 
     hudDisplayFlags = gHudDisplay.flags;
 
@@ -451,22 +439,8 @@ void render_hud(void) {
         sPowerMeterVisibleTimer[0] = 0;
         sPowerMeterVisibleTimer[1] = 0;
     } else {
-#ifdef VERSION_EU
-        // basically create_dl_ortho_matrix but guOrtho screen width is different
-
-        mtx = alloc_display_list(sizeof(*mtx));
-        if (mtx == NULL) {
-            return;
-        }
-        create_dl_identity_matrix();
-        guOrtho(mtx, -16.0f, SCREEN_WIDTH + 16, 0, SCREEN_HEIGHT, -10.0f, 10.0f, 1.0f);
-        gSPPerspNormalize(gDisplayListHead++, 0xFFFF);
-        gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx),
-                G_MTX_PROJECTION | G_MTX_MUL | G_MTX_NOPUSH);
-#else
         create_dl_ortho_matrix();
-#endif
-
+        
         if (gCurrentArea != NULL && gCurrentArea->camera->mode == CAMERA_MODE_INSIDE_CANNON) {
             render_hud_cannon_reticle();
         }
