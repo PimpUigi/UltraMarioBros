@@ -155,9 +155,9 @@ void display_frame_buffer(void) {
     gDPSetCycleType(gDisplayListHead++, G_CYC_1CYCLE);
     if (!luigiCamFirst) {
         gDPSetColorImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH,
-                         gFrameBuffers[frameBufferIndex]);
+                         gPhysicalFrameBuffers[frameBufferIndex]);
     } else {
-        gDPSetColorImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, gFrameBuffers[e]);
+        gDPSetColorImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, gPhysicalFrameBuffers[e]);
     }
 
     if ((gCurrLevelNum != LEVEL_MIN) && !inStarSelect && !inEnd) { // RISKY
@@ -310,9 +310,9 @@ void draw_reset_bars(void) {
         }
 
         if (!luigiCamFirst) {
-            sp18 = (u64 *) PHYSICAL_TO_VIRTUAL(gFrameBuffers[fbNum]);
+            sp18 = (u64 *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[fbNum]);
         } else {
-            sp18 = (u64 *) PHYSICAL_TO_VIRTUAL(gFrameBuffers[e]);
+            sp18 = (u64 *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[e]);
         }
 
         sp18 = (u64 *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[fbNum]);
@@ -371,13 +371,12 @@ void display_and_vsync(void) {
 
     if ((gCurrLevelNum != LEVEL_MIN) && !inStarSelect && !inEnd) {
         if (!luigiCamFirst) {
-            osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gFrameBuffers[sCurrFBNum]));
+            osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[sCurrFBNum]));
         }
     } else {
-        osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gFrameBuffers[sCurrFBNum]));
+        osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[sCurrFBNum]));
     }
 
-    osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[sCurrFBNum]));
     profiler_log_thread5_time(THREAD5_END);
     osRecvMesg(&gGameVblankQueue, &D_80339BEC, OS_MESG_BLOCK);
     if (++sCurrFBNum == 3) {

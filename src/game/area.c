@@ -397,13 +397,13 @@ void render_game(void) {
         inEnd = ((gMarioStates[0].action == ACT_END_PEACH_CUTSCENE)
                  || (gMarioStates[0].action == ACT_CREDITS_CUTSCENE)
                  || (gMarioStates[0].action == ACT_END_WAVING_CUTSCENE)
-                 || (gMarioStates[0].action == ACT_END_WAVING_CUTSCENE));
+                );
         if ((gCurrLevelNum != LEVEL_MIN) && (count_objects_with_behavior(bhvActSelector) == 0)
             && !inEnd) {
             if (horizontal) {
-                manip->width = 0x50;
+                manip->width = 80;
             } else {
-                manip->height = 0x3c;
+                manip->height = 60;
             }
 
             if (luigiCamFirst) {
@@ -429,10 +429,10 @@ void render_game(void) {
             luigiCamFirst = luigiCamFirst ^ 1;
         } else {
             if (horizontal) {
-                manip->width = 0xa0;
+                manip->width = SCREEN_WIDTH / 2;
                 manip->x = manip->width;
             } else {
-                manip->height = 0x78;
+                manip->height = SCREEN_HEIGHT / 2;
                 manip->y = manip->height;
             }
 

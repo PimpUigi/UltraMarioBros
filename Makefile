@@ -12,7 +12,7 @@ default: all
 # Version of the game to build
 VERSION ?= us
 # Graphics microcode used
-GRUCODE ?= f3d_old
+GRUCODE ?= f3dzex
 # If COMPARE is 1, check the output sha1sum when building 'all'
 COMPARE ?= 0
 # If NON_MATCHING is 1, define the NON_MATCHING and AVOID_UB macros when building (recommended)
@@ -86,7 +86,6 @@ ifeq ($(GRUCODE),f3d_new) # Fast3D 2.0H (Shindou)
   COMPARE := 0
 else
 ifeq ($(GRUCODE),f3dzex) # Fast3DZEX (2.0J / Animal Forest - Dōbutsu no Mori)
-  $(warning Fast3DZEX is experimental. Try at your own risk.)
   GRUCODE_CFLAGS := -DF3DEX_GBI_2
   GRUCODE_ASFLAGS := --defsym F3DEX_GBI_SHARED=1 --defsym F3DZEX_GBI=1
   TARGET := $(TARGET).f3dzex
