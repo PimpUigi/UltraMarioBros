@@ -258,6 +258,21 @@ void render_hud_power_meter(int playerID) {
 }
 
 #define HUD_TOP_Y 204 + 16 - BORDER_HEIGHT * 2
+#define HUD_RIGHT_X 242
+
+s16 move_hud_x_right_pos(s16 num) {
+    s16 x;
+
+    if (num >= 100) {
+        x = 0;
+    } else if (num >= 10) { 
+        x = 12;
+    } else { 
+        x = 24;
+    }
+    return x;
+}   
+
 /**
  * Renders the amount of lives Mario has.
  */
@@ -275,38 +290,32 @@ void render_hud_mario_lives(void) {
     }
 }
 
-#define HUD_RIGHT_X 242
+
 /**
  * Renders the amount of coins collected.
  */
 void render_hud_coins(void) {
     int c = HUD_TOP_Y;
-    print_text(HUD_RIGHT_X, c / 2 - 8, "+"); // 'Coin' glyph
-    print_text(HUD_RIGHT_X + 16, c / 2 - 8, "*"); // 'X' glyph
-    print_text_fmt_int(HUD_RIGHT_X + 30, c / 2 - 8, "%d", gMarioStates[0].numCoins + gMarioStates[1].numCoins);
+    s16 xAdj = move_hud_x_right_pos(gMarioStates[0].numCoins + gMarioStates[1].numCoins);
+    
+    print_text(HUD_RIGHT_X + xAdj, c / 2 - 8, "+"); // 'Coin' glyph
+    print_text(HUD_RIGHT_X + 16 + xAdj, c / 2 - 8, "*"); // 'X' glyph
+    print_text_fmt_int(HUD_RIGHT_X + 30 + xAdj, c / 2 - 8, "%d", gMarioStates[0].numCoins + gMarioStates[1].numCoins);
 }
 
 /**
  * Renders the amount of stars collected.
  */
 void render_hud_stars(void) {
-    s16 yMove;
+    s16 xAdj = move_hud_x_right_pos(gHudDisplay.stars);
 
     if (gHudFlash == 1 && gGlobalTimer % 10) {
         return;
     }
 
-    if (gHudDisplay.stars >= 100) {
-        yMove = 0;
-    } else if (gHudDisplay.stars >= 10) { 
-        yMove = 12;
-    } else { 
-        yMove = 24;
-    }
-
-    print_text(HUD_RIGHT_X + yMove, HUD_TOP_Y, "-"); // 'Star' glyph
-    print_text(HUD_RIGHT_X + 16 + yMove, HUD_TOP_Y, "*"); // 'X' glyph
-    print_text_fmt_int(HUD_RIGHT_X + 30 + yMove, HUD_TOP_Y, "%d", gHudDisplay.stars);
+    print_text(HUD_RIGHT_X + xAdj, HUD_TOP_Y, "-"); // 'Star' glyph
+    print_text(HUD_RIGHT_X + 16 + xAdj, HUD_TOP_Y, "*"); // 'X' glyph
+    print_text_fmt_int(HUD_RIGHT_X + 30 + xAdj, HUD_TOP_Y, "%d", gHudDisplay.stars);
 }
 
 /**
