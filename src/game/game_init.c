@@ -315,7 +315,6 @@ void draw_reset_bars(void) {
             sp18 = (u64 *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[e]);
         }
 
-        sp18 = (u64 *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[fbNum]);
         sp18 += D_8032C648++ * (SCREEN_WIDTH / 4);
 
         for (sp24 = 0; sp24 < ((SCREEN_HEIGHT / 16) + 1); sp24++) {
