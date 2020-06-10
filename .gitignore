@@ -71,5 +71,8 @@ build/*
 !/assets/**/*custom*.bin
 !/assets/**/*custom*/**/*.bin
 
-# Luigi - TODO: Remove repeated textures
+# Luigi, Mario and textures
 !/actors/luigi/*
+!/actors/mario/*
+!/actors/player_shared/*
+

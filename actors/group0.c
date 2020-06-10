@@ -6,6 +6,8 @@
 #include "make_const_nonconst.h"
 
 // Note: This bin does not use bin IDs, unlike the other segmented bins.
+#include "player_shared/model.inc.c"
+
 #include "mario/model.inc.c"
 
 #include "luigi/model.inc.c"
