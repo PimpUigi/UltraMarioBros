@@ -672,7 +672,7 @@ const GeoLayout luigi_geo_render_body[] = {
 
 // 0x17002DD4
 const GeoLayout luigi_geo[] = {
-   GEO_SHADOW(SHADOW_CIRCLE_PLAYER, 0xB4, 100),
+   GEO_SHADOW(SHADOW_CIRCLE_PLAYER, 0xD2, 100),
    GEO_OPEN_NODE(),
       GEO_SCALE(0x00, 20480),
       GEO_OPEN_NODE(),

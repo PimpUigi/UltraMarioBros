@@ -5,7 +5,7 @@
 # obtain a list of segments from the *.c files in bin directory
 SEGMENTS := $(notdir $(basename $(wildcard bin/*.c))) $(addprefix $(VERSION)/,$(notdir $(basename $(wildcard bin/$(VERSION)/*.c)))) $(addsuffix _skybox,$(notdir $(basename $(wildcard textures/skyboxes/*.png))))
 ACTORS := $(filter %/,$(wildcard actors/*/))
-TEXTURE_DIRS := $(addprefix textures/,$(SEGMENTS)) $(ACTORS) textures/intro_raw textures/segment2/custom textures/custom/level_menu
+TEXTURE_DIRS := $(addprefix textures/,$(SEGMENTS)) $(ACTORS) textures/intro_raw textures/segment2/custom textures/custom/level_menu textures/custom/level_intro
 
 # NOTE: textures assume naming convention "texture.<encoding>.png" generates "texture.<encoding>"
 
@@ -189,10 +189,12 @@ SKY_FILES                    := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DI
 MACHINE_FILES                := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/machine/*.png))
 MOUNTAIN_FILES               := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/mountain/*.png))
 GRASS_FILES                  := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/grass/*.png))
-CUSTOM_TEXTURE_FILES         := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/custom/level_menu/*.png))
+CUSTOM_TEX_MENU_FILES        := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/custom/level_menu/*.png))
+CUSTOM_TEX_INTRO_FILES       := $(patsubst %.png,%.inc.c,$(wildcard $(TEXTURE_DIR)/custom/level_intro/*.png))
 
 # Misc 
-$(BUILD_DIR)/levels/menu/leveldata.o: $(addprefix $(BUILD_DIR)/,$(CUSTOM_TEXTURE_FILES))
+$(BUILD_DIR)/levels/menu/leveldata.o: $(addprefix $(BUILD_DIR)/,$(CUSTOM_TEX_MENU_FILES))
+$(BUILD_DIR)/levels/intro/leveldata.o: $(addprefix $(BUILD_DIR)/,$(CUSTOM_TEX_INTRO_FILES))
 
 # Texture Files
 $(BUILD_DIR)/bin/segment2.o: $(addprefix $(BUILD_DIR)/,$(SEGMENT2_FILES))
