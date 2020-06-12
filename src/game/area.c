@@ -108,44 +108,23 @@ void set_warp_transition_rgb(u8 red, u8 green, u8 blue) {
 }
 
 void print_intro_text(void) {
-    
-    print_text_centered(160, 210, "By Kaze Emanuar");
+    print_text_centered(160, 190, "Super Mario 64");
+    print_text_centered(160, 160, "Splitscreen Multiplayer");
+    print_text_centered(160, 130, "By Kaze Emanuar");
+    print_text_centered(160, 100, "Update by AloXado320");
 
     if ((gGlobalTimer & 0x1F) < 20) {
         if (gPlayer2Controller->controllerData == NULL || gPlayer1Controller->controllerData == NULL) {
             if (gPlayer1Controller->controllerData == NULL) {
-                print_text_centered(160, 20, "NO PLAYER 1 CONTROLLER");
+                print_text_centered(160, 30, "NO PLAYER 1 CONTROLLER");
             }
             if (gPlayer2Controller->controllerData == NULL) {
-                print_text_centered(160, 38, "NO PLAYER 2 CONTROLLER");
+                print_text_centered(160, 50, "NO PLAYER 2 CONTROLLER");
             }
         } else {
-            print_text_centered(60, 38, "PRESS");
-            print_text_centered(60, 20, "START");
+            print_text_centered(160, 40, "PRESS START");
         }
     }
-/* 
-#ifdef VERSION_EU
-    int language = eu_get_language();
-#endif
-
-    if ((gGlobalTimer & 0x1F) < 20) {
-        if (gControllerBits == 0) {
-#ifdef VERSION_EU
-            print_text_centered(160, 20, gNoControllerMsg[language]);
-#else
-            print_text_centered(160, 20, "NO CONTROLLER");
-#endif
-        } else {
-#ifdef VERSION_EU
-            print_text(20, 20, "START");
-#else
-            print_text_centered(60, 38, "PRESS");
-            print_text_centered(60, 20, "START");
-#endif
-        }
-    }
-*/
 }
 
 u32 get_mario_spawn_type(struct Object *o) {
