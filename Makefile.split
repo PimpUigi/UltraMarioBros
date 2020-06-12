@@ -249,6 +249,3 @@ $(BUILD_DIR)/bin/%_skybox.elf: SEGMENT_ADDRESS := 0x0A000000
 # Misc Rules
 # --------------------------------------
 
-# intro_raw textures are not compressed
-INTRO_RAW_FILES              := $(wildcard $(TEXTURE_DIR)/intro_raw/*.png)
-$(BUILD_DIR)/src/goddard/renderer.o: $(addprefix $(BUILD_DIR)/,$(patsubst %.png,%.inc.c,$(INTRO_RAW_FILES)))

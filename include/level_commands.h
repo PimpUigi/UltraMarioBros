@@ -133,8 +133,8 @@
     CMD_PTR(romStart), \
     CMD_PTR(romEnd)
 
-#define LOAD_MARIO_HEAD(sethead) \
-    CMD_BBH(0x19, 0x04, sethead)
+#define LOAD_MARIO_HEAD() \
+    CMD_BBH(0x32, 0x04, 0x0000)
 
 #define LOAD_MIO0_TEXTURE(seg, romStart, romEnd) \
     CMD_BBH(0x1A, 0x0C, seg), \

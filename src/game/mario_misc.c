@@ -15,7 +15,6 @@
 #include "engine/math_util.h"
 #include "memory.h"
 #include "object_helpers.h"
-#include "goddard/renderer.h"
 #include "rendering_graph_node.h"
 #include "save_file.h"
 #include "sound_init.h"
@@ -77,37 +76,6 @@ struct GraphNodeObject gMirrorMario;  // copy of Mario's geo node for drawing mi
 // treated this like a "misc" file for vaguely mario related things
 // (message NPC related things, the mario head geo, and mario geo
 // functions)
-
-/**
- * Geo node script that draws Mario's head on the title screen.
- */
-Gfx *geo_draw_mario_head_goddard(s32 callContext, struct GraphNode *node, Mat4 *c) {
-    Gfx *gfx = NULL;
-    s16 sfx = 0;
-    OSContPad fusion;
-    struct GraphNodeGenerated *asGenerated = (struct GraphNodeGenerated *) node;
-    UNUSED Mat4 *transform = c;
-
-    if (callContext == GEO_CONTEXT_RENDER) {
-        if (gPlayer2Controller->controllerData != NULL && gPlayer1Controller->controllerData != NULL && gWarpTransition.isActive == 0) {
-            fusion.button =
-                gPlayer2Controller->controllerData->button | gPlayer1Controller->controllerData->button;
-            fusion.stick_x = gPlayer2Controller->controllerData->stick_x
-                             + gPlayer1Controller->controllerData->stick_x;
-            fusion.stick_y = gPlayer2Controller->controllerData->stick_y
-                             + gPlayer1Controller->controllerData->stick_y;
-            gd_copy_p1_contpad(&fusion);
-            gCurrLevelNum = LEVEL_MIN;
-            luigiCamFirst = 0;
-            //gd_copy_p1_contpad(gPlayer1Controller->controllerData);
-        }
-        gfx = (Gfx *) PHYSICAL_TO_VIRTUAL(gdm_gettestdl(asGenerated->parameter));
-        D_8032C6A0 = gd_vblank;
-        sfx = gd_sfx_to_play();
-        play_menu_sounds(sfx);
-    }
-    return gfx;
-}
 
 static void toad_message_faded(void) {
     if (gCurrentObject->oDistanceToMario > 700.0f) {
