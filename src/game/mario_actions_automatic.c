@@ -1,4 +1,4 @@
-#include <ultra64.h>
+#include <PR/ultratypes.h>
 
 #include "sm64.h"
 #include "behavior_data.h"
@@ -417,7 +417,7 @@ s32 act_start_hanging(struct MarioState *m) {
         return set_mario_action(m, ACT_GROUND_POUND, 0);
     }
 
-    //! Crash if mario's referenced ceiling is NULL (same for other hanging actions)
+    //! Crash if Mario's referenced ceiling is NULL (same for other hanging actions)
     if (m->ceil->type != SURFACE_HANGABLE) {
         return set_mario_action(m, ACT_FREEFALL, 0);
     }
@@ -908,7 +908,7 @@ s32 act_bubbled(struct MarioState *m) {
         if ((dist_between_objects(oMar, m->marioObj) < 200.f) && (m->numLives != -1)) {
             set_mario_action(m, ACT_FREEFALL, 0);
             play_sound(SOUND_OBJ_DEFAULT_DEATH, gDefaultSoundArgs);
-            m->bubble->activeFlags = 0;
+            m->bubble->activeFlags = ACTIVE_FLAG_DEACTIVATED;
             m->bubble = NULL;
             m->invincTimer = 0x20;
             m->flags &= ~MARIO_VANISH_CAP;

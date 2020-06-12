@@ -12,7 +12,7 @@ struct WaterDropletParams sWaterSplashDropletParams = {
 };
 
 // Water droplets from Mario jumping in shallow water.
-struct WaterDropletParams sShallowWaterSplashDropletParams = {
+struct WaterDropletParams gShallowWaterSplashDropletParams = {
     /* Flags */ WATER_DROPLET_FLAG_RAND_ANGLE | WATER_DROPLET_FLAG_SET_Y_TO_WATER_LEVEL,
     /* Model */ MODEL_WHITE_PARTICLE_SMALL,
     /* Behavior */ bhvWaterDroplet,
@@ -34,7 +34,7 @@ struct WaterDropletParams sWaterDropletFishParams = {
 };
 
 // Water droplets from Mario running in shallow water.
-struct WaterDropletParams sShallowWaterWaveDropletParams = {
+struct WaterDropletParams gShallowWaterWaveDropletParams = {
     /* Flags */ WATER_DROPLET_FLAG_RAND_ANGLE_INCR_PLUS_8000 | WATER_DROPLET_FLAG_RAND_ANGLE | WATER_DROPLET_FLAG_SET_Y_TO_WATER_LEVEL,
     /* Model */ MODEL_WHITE_PARTICLE_SMALL, 
     /* Behavior */ bhvWaterDroplet, 
@@ -88,7 +88,7 @@ void bhv_idle_water_wave_loop(void) {
     o->oPosY = gMarioStates[gMarioObject->oAnimState].waterLevel + 5;
     if (!(gMarioObject->oMarioParticleFlags & ACTIVE_PARTICLE_IDLE_WATER_WAVE)) {
         gMarioObject->oActiveParticleFlags &= (u16)~ACTIVE_PARTICLE_IDLE_WATER_WAVE;
-        o->activeFlags = 0;
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }
 

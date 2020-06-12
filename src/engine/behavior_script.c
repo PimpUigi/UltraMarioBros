@@ -1,17 +1,19 @@
 #include <ultra64.h>
 
 #include "sm64.h"
+#include "behavior_data.h"
 #include "behavior_script.h"
+#include "game/area.h"
+#include "game/behavior_actions.h"
+#include "game/game_init.h"
+#include "game/level_update.h"
+#include "game/mario.h"
 #include "game/memory.h"
+#include "game/obj_behaviors_2.h"
+#include "game/object_helpers.h"
+#include "game/object_list_processor.h"
 #include "graph_node.h"
 #include "surface_collision.h"
-#include "game/object_helpers.h"
-#include "game/mario.h"
-#include "game/game_init.h"
-#include "game/obj_behaviors_2.h"
-#include "behavior_data.h"
-#include "game/object_list_processor.h"
-#include "game/level_update.h"
 
 // Macros for retrieving arguments from behavior scripts.
 #define BHV_CMD_GET_1ST_U8(index)  (u8)((gCurBhvCommand[index] >> 24) & 0xFF) // unused
@@ -64,7 +66,7 @@ u16 random_u16(void) {
     return gRandomSeed16;
 }
 
-// Generate a pseudorandom float from 0 to 1.
+// Generate a pseudorandom float in the range [0, 1).
 f32 random_float(void) {
     f32 rnd = random_u16();
     return rnd / (double) 0x10000;
@@ -99,10 +101,10 @@ static void cur_obj_bhv_stack_push(uintptr_t bhvAddr) {
 // Retrieve the last behavior command address from the object's behavior stack.
 static uintptr_t cur_obj_bhv_stack_pop(void) {
     uintptr_t bhvAddr;
-    
+
     gCurrentObject->bhvStackIndex--;
     bhvAddr = gCurrentObject->bhvStack[gCurrentObject->bhvStackIndex];
-    
+
     return bhvAddr;
 }
 
@@ -116,7 +118,7 @@ static void stub_behavior_script_1(void) {
 // Usage: HIDE()
 static s32 bhv_cmd_hide(void) {
     cur_obj_hide();
-    
+
     gCurBhvCommand++;
     return BHV_PROC_CONTINUE;
 }
@@ -125,7 +127,7 @@ static s32 bhv_cmd_hide(void) {
 // Usage: DISABLE_RENDERING()
 static s32 bhv_cmd_disable_rendering(void) {
     gCurrentObject->header.gfx.node.flags &= ~GRAPH_RENDER_ACTIVE;
-    
+
     gCurBhvCommand++;
     return BHV_PROC_CONTINUE;
 }
@@ -134,7 +136,7 @@ static s32 bhv_cmd_disable_rendering(void) {
 // Usage: BILLBOARD()
 static s32 bhv_cmd_billboard(void) {
     gCurrentObject->header.gfx.node.flags |= GRAPH_RENDER_BILLBOARD;
-    
+
     gCurBhvCommand++;
     return BHV_PROC_CONTINUE;
 }
@@ -143,9 +145,9 @@ static s32 bhv_cmd_billboard(void) {
 // Usage: SET_MODEL(modelID)
 static s32 bhv_cmd_set_model(void) {
     s32 modelID = BHV_CMD_GET_2ND_S16(0);
-    
+
     gCurrentObject->header.gfx.sharedChild = gLoadedGraphNodes[modelID];
-    
+
     gCurBhvCommand++;
     return BHV_PROC_CONTINUE;
 }
@@ -196,7 +198,7 @@ static s32 bhv_cmd_spawn_child_with_param(void) {
 // Command 0x1D: Exits the behavior script and despawns the object.
 // Usage: DEACTIVATE()
 static s32 bhv_cmd_deactivate(void) {
-    gCurrentObject->activeFlags = 0;
+    gCurrentObject->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     return BHV_PROC_BREAK;
 }
 
@@ -217,7 +219,7 @@ static s32 bhv_cmd_break_unused(void) {
 static s32 bhv_cmd_call(void) {
     const BehaviorScript *jumpAddress;
     gCurBhvCommand++;
-    
+
     cur_obj_bhv_stack_push(BHV_CMD_GET_ADDR_OF_CMD(1)); // Store address of the next bhv command in the stack.
     jumpAddress = segmented_to_virtual(BHV_CMD_GET_VPTR(0));
     gCurBhvCommand = jumpAddress; // Jump to the new address.
@@ -301,7 +303,7 @@ static s32 bhv_cmd_begin_repeat(void) {
 static s32 bhv_cmd_end_repeat(void) {
     u32 count = cur_obj_bhv_stack_pop(); // Retrieve loop count from the stack.
     count--;
-    
+
     if (count != 0) {
         gCurBhvCommand = (const BehaviorScript *) cur_obj_bhv_stack_pop(); // Jump back to the first command in the loop
         // Save address and count to the stack again
@@ -321,7 +323,7 @@ static s32 bhv_cmd_end_repeat(void) {
 static s32 bhv_cmd_end_repeat_continue(void) {
     u32 count = cur_obj_bhv_stack_pop();
     count--;
-    
+
     if (count != 0) {
         gCurBhvCommand = (const BehaviorScript *) cur_obj_bhv_stack_pop(); // Jump back to the first command in the loop
         // Save address and count to the stack again
@@ -547,7 +549,7 @@ static s32 bhv_cmd_drop_to_floor(void) {
     f32 x = gCurrentObject->oPosX;
     f32 y = gCurrentObject->oPosY;
     f32 z = gCurrentObject->oPosZ;
-    
+
     f32 floor = find_floor_height(x, y + 200.0f, z);
     gCurrentObject->oPosY = floor;
     gCurrentObject->oMoveFlags |= OBJ_MOVE_ON_GROUND;
@@ -666,7 +668,7 @@ static s32 bhv_cmd_nop_4(void) {
 static s32 bhv_cmd_begin(void) {
     // These objects were likely very early objects, which is why this code is here
     // instead of in the respective behavior scripts.
-    
+
     // Initiate the room if the object is a haunted chair or the mad piano.
     if (cur_obj_has_behavior(bhvHauntedChair)) {
         bhv_init_room();
@@ -697,7 +699,7 @@ static void bhv_cmd_set_int_random_from_table(s32 tableSize) {
     }
 
     cur_obj_set_int(field, table[(s32)(tableSize * random_float())]);
-    
+
     // Does not increment gCurBhvCommand or return a bhv status
 }
 
@@ -720,7 +722,7 @@ static s32 bhv_cmd_set_int_random_from_table(void) {
 
     // Set the field to a random entry of the table.
     cur_obj_set_int(field, table[(s32)(tableSize * random_float())]);
-    
+
     gCurBhvCommand += (tableSize / 2) + 1;
     return BHV_PROC_CONTINUE;
 }
@@ -730,9 +732,9 @@ static s32 bhv_cmd_set_int_random_from_table(void) {
 // Usage: LOAD_COLLISION_DATA(collisionData)
 static s32 bhv_cmd_load_collision_data(void) {
     u32 *collisionData = segmented_to_virtual(BHV_CMD_GET_VPTR(1));
-    
+
     gCurrentObject->collisionData = collisionData;
-    
+
     gCurBhvCommand += 2;
     return BHV_PROC_CONTINUE;
 }
@@ -743,7 +745,7 @@ static s32 bhv_cmd_set_home(void) {
     gCurrentObject->oHomeX = gCurrentObject->oPosX;
     gCurrentObject->oHomeY = gCurrentObject->oPosY;
     gCurrentObject->oHomeZ = gCurrentObject->oPosZ;
-    
+
     gCurBhvCommand++;
     return BHV_PROC_CONTINUE;
 }
@@ -816,9 +818,9 @@ static s32 bhv_cmd_parent_bit_clear(void) {
 // Usage: SPAWN_WATER_DROPLET(dropletParams)
 static s32 bhv_cmd_spawn_water_droplet(void) {
     struct WaterDropletParams *dropletParams = BHV_CMD_GET_VPTR(1);
-    
+
     spawn_water_droplet(gCurrentObject, dropletParams);
-    
+
     gCurBhvCommand += 2;
     return BHV_PROC_CONTINUE;
 }

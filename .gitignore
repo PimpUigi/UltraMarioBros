@@ -76,3 +76,5 @@ build/*
 !/actors/mario/*
 !/actors/player_shared/*
 
+# Crash Screen Textures
+!/textures/crash_screen/*

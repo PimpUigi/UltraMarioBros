@@ -1,6 +1,8 @@
-#include <ultra64.h>
+#include <PR/ultratypes.h>
 
 #include "sm64.h"
+#include "actors/common1.h"
+#include "gfx_dimensions.h"
 #include "game_init.h"
 #include "level_update.h"
 #include "camera.h"
@@ -114,7 +116,7 @@ void render_dl_power_meter(s16 numHealthWedges, int playerID) {
         return;
     }
 
-    guTranslate(mtx, (f32) sPowerMeterHUD[playerID].x,
+    guTranslate(mtx, GFX_DIMENSIONS_FROM_LEFT_EDGE((f32) sPowerMeterHUD[playerID].x),
                 (f32) sPowerMeterHUD[playerID].y / (1 + playerID) - playerID * 19, 0);
 
     gSPMatrix(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(mtx++),
@@ -258,7 +260,7 @@ void render_hud_power_meter(int playerID) {
 }
 
 #define HUD_TOP_Y 204 + 16 - BORDER_HEIGHT * 2
-#define HUD_RIGHT_X 242
+#define HUD_RIGHT_X 78
 
 s16 move_hud_x_right_pos(s16 num) {
     s16 x;
@@ -281,12 +283,12 @@ void render_hud_mario_lives(void) {
     int c = HUD_TOP_Y;
     for (i = 0; i < activePlayers; i++) {
         if (i == 0) {
-            print_text(8, c / (i + 1) - 8 * i, ","); // 'Mario Head' glyph
+            print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(8), c / (i + 1) - 8 * i, ","); // 'Mario Head' glyph
         } else {
-            print_text(8, c / (i + 1) - 8 * i, "/"); // 'Luigi Head' glyph - uses beta key symbol
+            print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(8), c / (i + 1) - 8 * i, "/"); // 'Luigi Head' glyph - uses beta key symbol
         }
-        print_text(24, c / (i + 1) - 8 * i, "*"); // 'X' glyph
-        print_text_fmt_int(40, c / (i + 1) - 8 * i, "%d", gMarioStates[i].numLives);
+        print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(24), c / (i + 1) - 8 * i, "*"); // 'X' glyph
+        print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(40), c / (i + 1) - 8 * i, "%d", gMarioStates[i].numLives);
     }
 }
 
@@ -298,9 +300,9 @@ void render_hud_coins(void) {
     int c = HUD_TOP_Y;
     s16 xAdj = move_hud_x_right_pos(gMarioStates[0].numCoins + gMarioStates[1].numCoins);
     
-    print_text(HUD_RIGHT_X + xAdj, c / 2 - 8, "+"); // 'Coin' glyph
-    print_text(HUD_RIGHT_X + 16 + xAdj, c / 2 - 8, "*"); // 'X' glyph
-    print_text_fmt_int(HUD_RIGHT_X + 30 + xAdj, c / 2 - 8, "%d", gMarioStates[0].numCoins + gMarioStates[1].numCoins);
+    print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(HUD_RIGHT_X - xAdj), c / 2 - 8, "+"); // 'Coin' glyph
+    print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(HUD_RIGHT_X - 16 - xAdj), c / 2 - 8, "*"); // 'X' glyph
+    print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(HUD_RIGHT_X - 30 - xAdj), c / 2 - 8, "%d", gMarioStates[0].numCoins + gMarioStates[1].numCoins);
 }
 
 /**
@@ -313,9 +315,9 @@ void render_hud_stars(void) {
         return;
     }
 
-    print_text(HUD_RIGHT_X + xAdj, HUD_TOP_Y, "-"); // 'Star' glyph
-    print_text(HUD_RIGHT_X + 16 + xAdj, HUD_TOP_Y, "*"); // 'X' glyph
-    print_text_fmt_int(HUD_RIGHT_X + 30 + xAdj, HUD_TOP_Y, "%d", gHudDisplay.stars);
+    print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(HUD_RIGHT_X - xAdj), HUD_TOP_Y, "-"); // 'Star' glyph
+    print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(HUD_RIGHT_X - 16 - xAdj), HUD_TOP_Y, "*"); // 'X' glyph
+    print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(HUD_RIGHT_X - 30 - xAdj), HUD_TOP_Y, "%d", gHudDisplay.stars);
 }
 
 /**
@@ -345,13 +347,13 @@ void render_hud_timer(void) {
 #ifdef VERSION_EU
     switch (eu_get_language()) {
         case LANGUAGE_ENGLISH:
-            print_text(170, 185, "TIME");
+            print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(150), 185, "TIME");
             break;
         case LANGUAGE_FRENCH:
-            print_text(165, 185, "TEMPS");
+            print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(155), 185, "TEMPS");
             break;
         case LANGUAGE_GERMAN:
-            print_text(170, 185, "ZEIT");
+            print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(150), 185, "ZEIT");
             break;
     }
 #endif
@@ -360,14 +362,14 @@ void render_hud_timer(void) {
 
     timerFracSecs = ((timerValFrames - (timerMins * 1800) - (timerSecs * 30)) & 0xFFFF) / 3;
 #ifndef VERSION_EU
-    print_text(170, 185, "TIME");
+    print_text(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(150), 185, "TIME");
 #endif
-    print_text_fmt_int(229, 185, "%0d", timerMins);
-    print_text_fmt_int(249, 185, "%02d", timerSecs);
-    print_text_fmt_int(283, 185, "%d", timerFracSecs);
+    print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(91), 185, "%0d", timerMins);
+    print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(71), 185, "%02d", timerSecs);
+    print_text_fmt_int(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(37), 185, "%d", timerFracSecs);
     gSPDisplayList(gDisplayListHead++, dl_hud_img_begin);
-    render_hud_tex_lut(239, 32, (*hudLUT)[GLYPH_APOSTROPHE]);
-    render_hud_tex_lut(274, 32, (*hudLUT)[GLYPH_DOUBLE_QUOTE]);
+    render_hud_tex_lut(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(81), 32, (*hudLUT)[GLYPH_APOSTROPHE]);
+    render_hud_tex_lut(GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(46), 32, (*hudLUT)[GLYPH_DOUBLE_QUOTE]);
     gSPDisplayList(gDisplayListHead++, dl_hud_img_end);
 }
 
@@ -393,7 +395,7 @@ void render_hud_camera_status(void) {
             return;
         }
         cameraLUT = segmented_to_virtual(&main_hud_camera_lut);
-        x = 280;
+        x = GFX_DIMENSIONS_RECT_FROM_RIGHT_EDGE(40);
         y = 88 + 8 - BORDER_HEIGHT + 120 * i;
 
         if (gMarioStates[i].thisPlayerCamera->hudStatus == CAM_STATUS_NONE) {

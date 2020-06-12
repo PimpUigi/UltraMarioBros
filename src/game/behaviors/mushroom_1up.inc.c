@@ -7,7 +7,7 @@ void bhv_1up_interact(void) {
     if (obj_check_if_collided_with_object(o, gMarioObject) == 1) {
         play_sound(SOUND_GENERAL_COLLECT_1UP, gDefaultSoundArgs);
         m->numLives++;
-        o->activeFlags = 0;
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }
 
@@ -22,10 +22,10 @@ void bhv_1up_init(void) {
     bhv_1up_common_init();
     if (o->oBehParams2ndByte == 1) {
         if ((save_file_get_flags() & 0x50) == 0)
-            o->activeFlags = 0;
+            o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     } else if (o->oBehParams2ndByte == 2) {
         if ((save_file_get_flags() & 0xa0) == 0)
-            o->activeFlags = 0;
+            o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }
 
@@ -255,7 +255,7 @@ void bhv_1up_hidden_trigger_loop(void) {
         if (sp1C != NULL)
             sp1C->o1UpHiddenUnkF4++;
 
-        o->activeFlags = 0;
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }
 
@@ -303,7 +303,7 @@ void bhv_1up_hidden_in_pole_trigger_loop(void) {
             ;
         }
 
-        o->activeFlags = 0;
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }
 
@@ -316,6 +316,6 @@ void bhv_1up_hidden_in_pole_spawner_loop(void) {
             spawn_object_relative(0, 0, sp2F * -200, 0, o, MODEL_NONE, bhvHidden1upInPoleTrigger);
         }
 
-        o->activeFlags = 0;
+        o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
     }
 }

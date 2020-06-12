@@ -1,5 +1,9 @@
 #include "libultra_internal.h"
+#ifdef GBI_FLOATS
+#include <string.h>
+#endif
 
+#ifndef GBI_FLOATS
 void guMtxF2L(float mf[4][4], Mtx *m) {
     int r, c;
     s32 tmp1;
@@ -15,6 +19,12 @@ void guMtxF2L(float mf[4][4], Mtx *m) {
         }
     }
 }
+#else
+void guMtxF2L(float mf[4][4], Mtx *m) {
+    memcpy(m, mf, sizeof(Mtx));
+}
+#endif
+
 void guMtxL2F(float mf[4][4], Mtx *m) {
     int r, c;
     u32 tmp1;
@@ -49,7 +59,11 @@ void guMtxIdentF(float mf[4][4]) {
     }
 }
 void guMtxIdent(Mtx *m) {
+#ifndef GBI_FLOATS
     float mf[4][4];
     guMtxIdentF(mf);
     guMtxF2L(mf, m);
+#else
+    guMtxIdentF(m->m);
+#endif
 }

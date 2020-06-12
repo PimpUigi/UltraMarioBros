@@ -135,7 +135,7 @@ void bhv_treasure_chest_ship_loop(void) {
                 set_environmental_camera_shake(SHAKE_ENV_JRB_SHIP_DRAIN, gMarioStates[1].thisPlayerCamera);
                 if (gEnvironmentRegions[6] < -335) {
                     gEnvironmentRegions[6] = -335;
-                    o->activeFlags = 0;
+                    o->activeFlags = ACTIVE_FLAG_DEACTIVATED;
                 }
             }
             break;

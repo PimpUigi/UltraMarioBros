@@ -1,4 +1,7 @@
 #include <ultra64.h>
+#ifdef NO_SEGMENTED_MEMORY
+#include <string.h>
+#endif
 
 #include "sm64.h"
 #include "audio/external.h"
@@ -16,14 +19,12 @@
 #include "geo_layout.h"
 #include "graph_node.h"
 #include "level_script.h"
+#include "level_misc_macros.h"
 #include "math_util.h"
 #include "surface_collision.h"
 #include "surface_load.h"
 #include "behavior_data.h"
 #include "../src/game/level_update.h"
-
-#define CMD_SIZE_SHIFT (sizeof(void *) >> 3)
-#define CMD_PROCESS_OFFSET(offset) ((offset & 3) | ((offset & ~3) << CMD_SIZE_SHIFT))
 
 #define CMD_GET(type, offset) (*(type *) (CMD_PROCESS_OFFSET(offset) + (u8 *) sCurrentCmd))
 
@@ -350,7 +351,7 @@ static void level_cmd_begin_area(void) {
 
         sCurrAreaIndex = areaIndex;
         screenArea->areaIndex = areaIndex;
-        gAreas[areaIndex].unk04 = (struct GraphNode *) screenArea;
+        gAreas[areaIndex].unk04 = screenArea;
 
         // this puts the root node at the same location??
         if (node != NULL) {
@@ -605,7 +606,18 @@ static void level_cmd_set_gamma(void) {
 
 static void level_cmd_set_terrain_data(void) {
     if (sCurrAreaIndex != -1) {
+#ifndef NO_SEGMENTED_MEMORY
         gAreas[sCurrAreaIndex].terrainData = segmented_to_virtual(CMD_GET(void *, 4));
+#else
+        Collision *data;
+        u32 size;
+
+        // The game modifies the terrain data and must be reset upon level reload.
+        data = segmented_to_virtual(CMD_GET(void *, 4));
+        size = get_area_terrain_size(data) * sizeof(Collision);
+        gAreas[sCurrAreaIndex].terrainData = alloc_only_pool_alloc(sLevelPool, size);
+        memcpy(gAreas[sCurrAreaIndex].terrainData, data, size);
+#endif
     }
     sCurrentCmd = CMD_NEXT;
 }
@@ -619,7 +631,19 @@ static void level_cmd_set_rooms(void) {
 
 static void level_cmd_set_macro_objects(void) {
     if (sCurrAreaIndex != -1) {
+#ifndef NO_SEGMENTED_MEMORY
         gAreas[sCurrAreaIndex].macroObjects = segmented_to_virtual(CMD_GET(void *, 4));
+#else
+        // The game modifies the macro object data (for example marking coins as taken),
+        // so it must be reset when the level reloads.
+        MacroObject *data = segmented_to_virtual(CMD_GET(void *, 4));
+        s32 len = 0;
+        while (data[len++] != MACRO_OBJECT_END()) {
+            len += 4;
+        }
+        gAreas[sCurrAreaIndex].macroObjects = alloc_only_pool_alloc(sLevelPool, len * sizeof(MacroObject));
+        memcpy(gAreas[sCurrAreaIndex].macroObjects, data, len * sizeof(MacroObject));
+#endif
     }
     sCurrentCmd = CMD_NEXT;
 }
@@ -820,7 +844,7 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
 
         while (obj != (struct Object *) listHead) {
             if (obj->behavior == behaviorAddr) {
-                if (obj->activeFlags != 0) {
+                if (obj->activeFlags != ACTIVE_FLAG_DEACTIVATED) {
                     if ((gMarioStates[luigiCamFirst].usedObj == obj->parentObj) && (gMarioStates[luigiCamFirst].usedObj->parentObj->oAction == 1)) {
                         obj->header.gfx.sharedChild = NULL;
                     } else {
