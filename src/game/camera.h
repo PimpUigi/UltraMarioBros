@@ -739,8 +739,8 @@ void shake_camera_yaw(); // postdefined
 void shake_camera_roll(s16 *); // postdefined
 s32 offset_yaw_outward_radial(struct Camera *a, s16 b);
 void play_camera_buzz_if_cdown(struct Camera *c);
-void play_camera_buzz_if_cbutton(struct Camera *c);
-void play_camera_buzz_if_c_sideways(struct Camera *c);
+void play_camera_buzz_if_cbutton(void);
+void play_camera_buzz_if_c_sideways(void);
 void play_sound_cbutton_up(void);
 void play_sound_cbutton_down(void);
 void play_sound_cbutton_side(void);

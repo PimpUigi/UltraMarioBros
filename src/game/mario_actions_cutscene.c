@@ -1145,7 +1145,7 @@ s32 act_falling_death_exit(struct MarioState *m) {
 #ifdef VERSION_SH
         queue_rumble_data(5, 80);
 #endif
-        m->numLives;
+        //m->numLives;
         // restore 7.75 units of health
         m->healCounter = 31;
     }
@@ -1372,7 +1372,7 @@ s32 act_teleport_fade_in(struct MarioState *m) {
         m->marioObj->header.gfx.node.flags |= 0x0001;
         set_mario_action(m, ACT_SHOT_FROM_CANNON, 0);
         m->fadeWarpOpacity = 0xff;
-        return;
+        return FALSE;
     }
     play_sound_if_no_flag(m, SOUND_ACTION_TELEPORT, MARIO_ACTION_SOUND_PLAYED);
     set_mario_animation(m, MARIO_ANIM_FIRST_PERSON);

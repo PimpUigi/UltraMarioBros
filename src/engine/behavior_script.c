@@ -906,22 +906,16 @@ static BhvCommandProc BehaviorCmdTable[] = {
 // Execute the behavior script of the current object, process the object flags, and other miscellaneous code for updating objects.
 void cur_obj_update(void) {
     UNUSED u32 unused;
-    struct Object *backupMarioObject;
     s16 objFlags = gCurrentObject->oFlags;
     f32 distanceFromMario;
     BhvCommandProc bhvCmdProc;
     s32 bhvProcResult;
-    struct MarioState *m;
-    struct MarioState *l;
-    backupMarioObject = gMarioObject;
     
     if ((gLuigiObject != NULL) && (gMarioObject != NULL)) {
         if (dist_between_objects(gCurrentObject, gMarioObject)
             > dist_between_objects(gCurrentObject, gLuigiObject)) {
             gMarioObject = gLuigiObject;
         }
-        m = gMarioObject->collisionData;
-        l = gLuigiObject->collisionData;
     }
 
     // Calculate the distance from the object to Mario.

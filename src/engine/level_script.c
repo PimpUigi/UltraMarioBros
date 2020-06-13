@@ -834,7 +834,6 @@ struct LevelCommand *level_script_execute(struct LevelCommand *cmd) {
     uintptr_t *behaviorAddr = segmented_to_virtual(bhvCannonBarrel);
     struct Object *obj;
     struct ObjectNode *listHead;
-    int i;
     sScriptStatus = SCRIPT_RUNNING;
     sCurrentCmd = cmd;
 

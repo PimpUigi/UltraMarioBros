@@ -114,8 +114,8 @@ u8 unused0EA1FC[] = { 2,  0,   0, 0, 0,  0,   0, 0, 63, 128, 0, 0, 2,  0,   0, 0
                       65, 160, 0, 0, 63, 128, 0, 0, 8,  0,   0, 0, 65, 32,  0, 0, 63, 128, 0, 0 };
 
 void bhv_cannon_base_loop(void) {
-    struct MarioState *m;
-    m = gMarioObject->collisionData;
+    //struct MarioState *m;
+    //m = gMarioObject->collisionData;
     /*if (m->action != ACT_IN_CANNON){
         o->oAction = 0;
     }*/

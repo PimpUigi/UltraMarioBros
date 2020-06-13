@@ -19,6 +19,7 @@
 #include "object_list_processor.h"
 #include "platform_displacement.h"
 #include "profiler.h"
+#include "save_file.h"
 #include "spawn_object.h"
 
 /**

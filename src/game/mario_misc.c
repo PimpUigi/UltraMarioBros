@@ -566,7 +566,7 @@ Gfx *geo_mario_rotate_wing_cap_wings(s32 callContext, struct GraphNode *node, UN
         if (gCurGraphNodeHeldObject != 0) {
             obj = (struct Object *) gCurGraphNodeHeldObject->objNode;
         }
-        rotNode = &gBodyStates[obj->oAnimState];
+        //rotNode = &gBodyStates[obj->oAnimState];
 
         if (gBodyStates[obj->oAnimState].wingFlutter == FALSE) {
             rotX = (coss((gAreaUpdateCounter & 0xF) << 12) + 1.0f) * 4096.0f;

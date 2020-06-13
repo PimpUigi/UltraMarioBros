@@ -120,8 +120,7 @@ void my_rsp_init(void) {
 
 /** Clear the Z buffer. */
 void clear_z_buffer(void) { // RISKY
-    int c = BORDER_HEIGHT;
-    int d = SCREEN_HEIGHT;
+    int height = SCREEN_HEIGHT;
 
     gDPPipeSync(gDisplayListHead++);
 
@@ -133,8 +132,8 @@ void clear_z_buffer(void) { // RISKY
                     GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0));
 
     if ((gCurrLevelNum != LEVEL_MIN) && !inStarSelect && !inEnd) {
-        gDPFillRectangle(gDisplayListHead++, 0, d - d / (luigiCamFirst + 1), SCREEN_WIDTH - 1,
-                         d / 2 * (luigiCamFirst + 1) - 1);
+        gDPFillRectangle(gDisplayListHead++, 0, height - height / (luigiCamFirst + 1), SCREEN_WIDTH - 1,
+                         height / 2 * (luigiCamFirst + 1) - 1);
     } else {
         gDPFillRectangle(gDisplayListHead++, 0, BORDER_HEIGHT, SCREEN_WIDTH - 1,
                          SCREEN_HEIGHT - 1 - BORDER_HEIGHT);

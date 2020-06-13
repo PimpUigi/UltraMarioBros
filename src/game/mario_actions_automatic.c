@@ -782,14 +782,11 @@ s32 act_in_cannon(struct MarioState *m) {
 }
 
 s32 act_bubbled(struct MarioState *m) {
-    struct Object *marioObj = m->marioObj;
-    f32 mag;
-    f32 mag2;
     struct Surface *ceil;
     struct Surface *floor;
+    f32 mag;
     f32 ceilHeight;
     f32 floorHeight;
-    f32 ceilOffset;
     int i;
     struct Object *oMar;
     f32 dist;
@@ -810,7 +807,6 @@ s32 act_bubbled(struct MarioState *m) {
     if (m->controller->buttonDown & B_BUTTON) {
         m->vel[1] -= 2.f;
     }
-    mag2 = sqrtf(m->vel[0] * m->vel[0] + m->vel[2] * m->vel[2]) * 100;
     m->thisPlayerCamera->pos[1] = (m->pos[1] + 200.f);
     for (i = 0; i < 3; i++) {
         if (m->vel[i] > 40.f) {
@@ -888,7 +884,7 @@ s32 act_bubbled(struct MarioState *m) {
     }
 
     vec3f_copy(&m->marioObj->oPosX, m->pos);
-    vec3f_copy(&m->marioObj->header.gfx.pos, &m->marioObj->oPosX);
+    vec3f_copy(m->marioObj->header.gfx.pos, &m->marioObj->oPosX);
     m->marioObj->header.gfx.angle[1] = m->angleVel[1];
     m->marioObj->header.gfx.angle[0] = 0;
     m->marioObj->header.gfx.angle[2] = 0;

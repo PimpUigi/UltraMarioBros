@@ -26,6 +26,7 @@
 #include "thread6.h"
 #include "object_helpers.h"
 #include "interaction.h"
+#include "print.h"
 
 #define PLAY_MODE_NORMAL 0
 #define PLAY_MODE_PAUSED 2
@@ -541,7 +542,6 @@ void warp_credits(void) {
 void check_instant_warp(struct MarioState *m) {
     s16 cameraAngle;
     struct Surface *floor;
-    int i;
 
     if (gCurrLevelNum == LEVEL_CASTLE) {
         return;
@@ -822,7 +822,7 @@ s16 level_trigger_warp(struct MarioState *m, s32 warpOp) {
                         }
                     }
                     if (warp) {
-                        sDelayedWarpOp == warpOp;
+                        sDelayedWarpOp = warpOp;
                         sDelayedWarpTimer = 48;
                         sSourceWarpNodeId = WARP_NODE_DEATH;
                         play_transition(WARP_TRANSITION_FADE_INTO_BOWSER, 0x30, 0x00, 0x00, 0x00);

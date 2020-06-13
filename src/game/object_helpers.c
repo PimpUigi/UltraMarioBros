@@ -2198,7 +2198,7 @@ s32 cur_obj_wait_then_blink(s32 timeUntilBlinking, s32 numBlinks) {
 }
 
 s32 cur_obj_is_mario_ground_pounding_platform(void) {
-    struct MarioState *m = gMarioObject->collisionData;
+    //struct MarioState *m = gMarioObject->collisionData;
     if (gMarioState->marioObj->platform == o) {
         if (gMarioState->action == ACT_GROUND_POUND_LAND) {
             return TRUE;

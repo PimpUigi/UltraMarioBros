@@ -1479,7 +1479,7 @@ s32 update_fixed_camera(struct Camera *c, Vec3f focus, UNUSED Vec3f pos) {
     Vec3f basePos;
     UNUSED u8 filler[12];
 
-    play_camera_buzz_if_c_sideways(c);
+    play_camera_buzz_if_c_sideways();
 
     // Don't move closer to Mario in these areas
     switch (gCurrLevelArea) {
@@ -1993,7 +1993,7 @@ s16 update_slide_camera(struct Camera *c) {
     }
 
     // No C-Button input in this mode, notify the player with a buzzer
-    play_camera_buzz_if_cbutton(c);
+    play_camera_buzz_if_cbutton();
 
     // Focus on Mario
     vec3f_copy(c->focus, (&gPlayerCameraState[c->cameraID])->pos);
@@ -4808,13 +4808,13 @@ void play_camera_buzz_if_cdown(struct Camera *c) {
     }
 }
 
-void play_camera_buzz_if_cbutton(struct Camera *c) {
+void play_camera_buzz_if_cbutton(void) {
     if (gCamera->controller->buttonPressed & CBUTTON_MASK) {
         play_sound_button_change_blocked();
     }
 }
 
-void play_camera_buzz_if_c_sideways(struct Camera *c) {
+void play_camera_buzz_if_c_sideways() {
     if ((gCamera->controller->buttonPressed & L_CBUTTONS)
         || (gCamera->controller->buttonPressed & R_CBUTTONS)) {
         play_sound_button_change_blocked();
@@ -6969,7 +6969,7 @@ s16 cutscene_common_set_dialog_state(s32 state, struct Camera *c) {
 /**
  * Cause Mario to enter the normal dialog state.
  */
-void cutscene_mario_dialog(struct Camera *c) {
+BAD_RETURN(s32) cutscene_mario_dialog(struct Camera *c) {
     gCutsceneTimer[c->cameraID] = cutscene_common_set_dialog_state(1, c);
 }
 
@@ -9689,7 +9689,7 @@ extern struct CutsceneSplinePoint sCcmOutsideCreditsSplineFocus[];
 /**
  * Follow splines through the courses of the game.
  */
-void cutscene_credits(struct Camera *c) {
+BAD_RETURN(s32) cutscene_credits(struct Camera *c) {
     struct CutsceneSplinePoint *focus, *pos;
 
     cutscene_event(cutscene_credits_reset_spline, c, 0, 0);

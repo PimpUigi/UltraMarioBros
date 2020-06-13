@@ -966,7 +966,6 @@ void geo_process_node_and_siblings(struct GraphNode *firstNode) {
     s16 iterateChildren = TRUE;
     struct GraphNode *curGraphNode = firstNode;
     struct GraphNode *parent = curGraphNode->parent;
-    u32 a;
     // In the case of a switch node, exactly one of the children of the node is
     // processed instead of all children like usual
     if (parent != NULL) {
