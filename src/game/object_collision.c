@@ -30,11 +30,15 @@ int detect_object_hitbox_overlap(struct Object *a, struct Object *b) {
     f32 dz = a->oPosZ - b->oPosZ;
     f32 collisionRadius = a->hitboxRadius + b->hitboxRadius;
     f32 distance = sqrtf(dx * dx + dz * dz);
-    struct Object *unused10;
-    struct Object *unused11;
-    unused10 = gMarioObject->unused2;
-    unused11 = gLuigiObject->unused2;
-    if (!(((((a == gLuigiObject) & ((b == gLuigiObject->unused1)|| (b==unused11))) || ((b == gLuigiObject) & ((a == gLuigiObject->unused1)|| (a==unused11))))) || (((a == gMarioObject) & ((b == gMarioObject->unused1)|| (b==unused10))) || ((b == gMarioObject) & ((a == gMarioObject->unused1)|| (a==unused10)))))) {
+    struct Object *mObjHurtbox;
+    struct Object *lObjHurtbox;
+    mObjHurtbox = gMarioObject->oPlayerHurtbox;
+    lObjHurtbox = gLuigiObject->oPlayerHurtbox;
+
+    if (!(((((a == gLuigiObject) & ((b == gLuigiObject->oPlayerHitbox)|| (b==lObjHurtbox)))
+        || ((b == gLuigiObject) & ((a == gLuigiObject->oPlayerHitbox)|| (a==lObjHurtbox)))))
+        || (((a == gMarioObject) & ((b == gMarioObject->oPlayerHitbox)|| (b==mObjHurtbox)))
+        || ((b == gMarioObject) & ((a == gMarioObject->oPlayerHitbox)|| (a==mObjHurtbox)))))) {
         if (collisionRadius > distance) {
             f32 sp20 = a->hitboxHeight + sp3C;
             f32 sp1C = b->hitboxHeight + sp38;

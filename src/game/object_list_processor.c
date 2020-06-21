@@ -344,20 +344,20 @@ void bhv_mario_update(void) {
         f32 y;
         f32 z;
 
-        if ((gCurrentObject->unused1 == NULL) || (gCurrentObject->unused2 == 0)) {
-            gCurrentObject->unused1 = spawn_object(gCurrentObject, 0x00, bhvHitbox);
-            gCurrentObject->unused2 = spawn_object(gCurrentObject, 0x00, bhvHitbox);
+        if ((gCurrentObject->oPlayerHitbox == NULL) || (gCurrentObject->oPlayerHurtbox == 0)) {
+            gCurrentObject->oPlayerHitbox = spawn_object(gCurrentObject, 0x00, bhvHitbox);
+            gCurrentObject->oPlayerHurtbox = spawn_object(gCurrentObject, 0x00, bhvHitbox);
         }
-        playerHitbox = gCurrentObject->unused1;
-        playerHurtbox = gCurrentObject->unused2;
+        playerHitbox = gCurrentObject->oPlayerHitbox;
+        playerHurtbox = gCurrentObject->oPlayerHurtbox;
         if ((playerHitbox->behavior != segmented_to_virtual(bhvHitbox))) {
-            gCurrentObject->unused1 = spawn_object(gCurrentObject, 0x00, bhvHitbox);
+            gCurrentObject->oPlayerHitbox = spawn_object(gCurrentObject, 0x00, bhvHitbox);
         }
         if ((playerHurtbox->behavior != segmented_to_virtual(bhvHitbox))) {
-            gCurrentObject->unused2 = spawn_object(gCurrentObject, 0x00, bhvHitbox);
+            gCurrentObject->oPlayerHurtbox = spawn_object(gCurrentObject, 0x00, bhvHitbox);
         }
-        playerHitbox = gCurrentObject->unused1;
-        playerHurtbox = gCurrentObject->unused2;
+        playerHitbox = gCurrentObject->oPlayerHitbox;
+        playerHurtbox = gCurrentObject->oPlayerHurtbox;
 
         playerHitbox->hitboxRadius = 32.0f;
         playerHurtbox->hitboxRadius = 50.0f;
@@ -626,7 +626,7 @@ void spawn_objects_from_info(UNUSED s32 unused, struct SpawnInfo *spawnInfo) {
             object->oBehParams2ndByte = ((spawnInfo->behaviorArg) >> 16) & 0xFF;
 
             object->behavior = script;
-            object->unused1 = 0;
+            object->oPlayerHitbox = 0;
 
             // Record death/collection in the SpawnInfo
             object->respawnInfoType = RESPAWN_INFO_TYPE_32;

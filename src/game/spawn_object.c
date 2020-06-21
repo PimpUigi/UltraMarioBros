@@ -252,7 +252,7 @@ struct Object *allocate_object(struct ObjectNode *objList) {
     for (i = 0; i < 0x50; i++) obj->rawData.asS32[i] = 0;
 #endif
 
-    obj->unused1 = 0;
+    obj->oPlayerHitbox = 0;
     obj->bhvStackIndex = 0;
     obj->bhvDelayTimer = 0;
 
@@ -261,7 +261,7 @@ struct Object *allocate_object(struct ObjectNode *objList) {
     obj->hurtboxRadius = 0.0f;
     obj->hurtboxHeight = 0.0f;
     obj->hitboxDownOffset = 0.0f;
-    obj->unused2 = 0;
+    obj->oPlayerHurtbox = 0;
 
     obj->platform = NULL;
     obj->collisionData = NULL;
