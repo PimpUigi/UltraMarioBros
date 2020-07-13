@@ -1802,7 +1802,6 @@ void check_kick_or_punch_wall(struct MarioState *m) {
 }
 
 void mario_process_interactions(struct MarioState *m) {
-    struct Object *playerHurtbox = m->marioObj->oPlayerHurtbox;
     m->sDelayInvincTimer = FALSE;
     m->sInvulnerable = (m->action & ACT_FLAG_INVULNERABLE) || m->invincTimer != 0;
     timeSinceWarp += (timeSinceWarp < 220);
@@ -1813,7 +1812,8 @@ void mario_process_interactions(struct MarioState *m) {
             u32 interactType = sInteractionHandlers[i].interactType;
             if (m->collidedObjInteractTypes & interactType) {
                 struct Object *object = mario_get_collided_object(m, interactType);
-                if ((m->marioObj->oPlayerHitbox != object) && (playerHurtbox != object)) {
+                
+                if ((m->marioObj->oPlayerHitbox != object) && (m->marioObj->oPlayerHurtbox != object)) {
                     m->collidedObjInteractTypes &= ~interactType;
 
                     if (!(object->oInteractStatus & INT_STATUS_INTERACTED)) {

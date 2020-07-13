@@ -340,11 +340,9 @@ void bhv_mario_update(void) {
         i++;
     }
     if (activePlayers > 1) {
-        f32 x;
-        f32 y;
-        f32 z;
+        f32 x, y, z;
 
-        if ((gCurrentObject->oPlayerHitbox == NULL) || (gCurrentObject->oPlayerHurtbox == 0)) {
+        if ((gCurrentObject->oPlayerHitbox == NULL) || (gCurrentObject->oPlayerHurtbox == NULL)) {
             gCurrentObject->oPlayerHitbox = spawn_object(gCurrentObject, 0x00, bhvHitbox);
             gCurrentObject->oPlayerHurtbox = spawn_object(gCurrentObject, 0x00, bhvHitbox);
         }
@@ -626,7 +624,6 @@ void spawn_objects_from_info(UNUSED s32 unused, struct SpawnInfo *spawnInfo) {
             object->oBehParams2ndByte = ((spawnInfo->behaviorArg) >> 16) & 0xFF;
 
             object->behavior = script;
-            object->oPlayerHitbox = 0;
 
             // Record death/collection in the SpawnInfo
             object->respawnInfoType = RESPAWN_INFO_TYPE_32;
