@@ -816,7 +816,7 @@ s16 level_trigger_warp(struct MarioState *m, s32 warpOp) {
                     m->action = ACT_BUBBLED;
                 val04 = FALSE;
                     warp = 1;
-                    for (i = 0; i < activePlayers; i++) {
+                    for (i = 0; i < gActivePlayers; i++) {
                         if (gMarioStates[i].action != ACT_BUBBLED) {
                             warp = 0;
                         }
@@ -990,7 +990,7 @@ void update_hud_values(void) {
             }
         }
         
-        for (i = 0; i < activePlayers; i++) {
+        for (i = 0; i < gActivePlayers; i++) {
             numHealthWedges = gMarioStates[i].health > 0 ? gMarioStates[i].health >> 8 : 0;
             ;
             if (gMarioStates[i].numLives > 100) {
@@ -1075,7 +1075,7 @@ s32 play_mode_normal(void) {
         area_update_objects();
         if (deltaTime > 1562744) {
             // reset buttonPressed
-            for (i = 0; i < activePlayers; i++) {
+            for (i = 0; i < gActivePlayers; i++) {
                 struct Controller *controller = &gControllers[i];
                 if (controller->controllerData != NULL) {
                     controller->buttonPressed = 0;

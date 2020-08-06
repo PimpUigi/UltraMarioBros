@@ -879,7 +879,7 @@ u32 interact_warp(struct MarioState *m, UNUSED u32 interactType, struct Object *
         }
     } else {
         //only allow if no other mario is in act disappeared
-        for (i=0; i<activePlayers;i++){
+        for (i=0; i<gActivePlayers;i++){
             if (gMarioStates[i].action == ACT_DISAPPEARED){
                 canWarp = FALSE;
             }

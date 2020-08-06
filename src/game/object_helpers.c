@@ -2239,7 +2239,7 @@ void cur_obj_push_mario_away(f32 radius, struct MarioState *m) {
 void cur_obj_push_mario_away_from_cylinder(f32 radius, f32 extentY) {
     f32 marioRelY;
     int i;
-    for (i = 0; i < activePlayers; i++) {
+    for (i = 0; i < gActivePlayers; i++) {
         marioRelY = gMarioStates[i].marioObj->oPosY - o->oPosY;
 
         if (marioRelY < 0) {

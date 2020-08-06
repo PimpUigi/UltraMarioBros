@@ -281,7 +281,7 @@ s16 move_hud_x_right_pos(s16 num) {
 void render_hud_mario_lives(void) {
     int i;
     int c = HUD_TOP_Y;
-    for (i = 0; i < activePlayers; i++) {
+    for (i = 0; i < gActivePlayers; i++) {
         if (i == 0) {
             print_text(GFX_DIMENSIONS_RECT_FROM_LEFT_EDGE(8), c / (i + 1) - 8 * i, ","); // 'Mario Head' glyph
         } else {
@@ -390,7 +390,7 @@ void render_hud_camera_status(void) {
     s32 x;
     s32 y;
     int i;
-    for (i = 0; i < activePlayers; i++) {
+    for (i = 0; i < gActivePlayers; i++) {
         if (gMarioStates[i].thisPlayerCamera == NULL) {
             return;
         }

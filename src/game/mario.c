@@ -1816,7 +1816,7 @@ void init_mario(void) {
     struct Object *capObject;
     unused80339F10 = 0;
 
-    for (i = 0; i < activePlayers; i++) {
+    for (i = 0; i < gActivePlayers; i++) {
         gMarioStates[i].actionTimer = 0;
         gMarioStates[i].framesSinceA = 0xFF;
         gMarioStates[i].framesSinceB = 0xFF;
@@ -1913,7 +1913,7 @@ void init_mario(void) {
 
 void init_mario_from_save_file(void) {
     int i = 0;
-    for (i = 0; i < activePlayers; i++) {
+    for (i = 0; i < gActivePlayers; i++) {
         gMarioStates[i].unk00 = 0;
         gMarioStates[i].flags = 0;
         gMarioStates[i].action = 0;

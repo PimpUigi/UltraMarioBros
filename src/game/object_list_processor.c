@@ -339,7 +339,7 @@ void bhv_mario_update(void) {
 
         i++;
     }
-    if (activePlayers > 1) {
+    if (gActivePlayers > 1) {
         f32 x, y, z;
 
         if ((gCurrentObject->oPlayerHitbox == NULL) || (gCurrentObject->oPlayerHurtbox == NULL)) {
@@ -675,7 +675,6 @@ void clear_objects(void) {
     gLuigiObject = NULL; // also luigi=
     gMarioCurrentRoom[0] = 0;
     gMarioCurrentRoom[1] = 0;
-    gMarioObject = NULL;
 
     for (i = 0; i < 60; i++) {
         gDoorAdjacentRooms[i][0] = 0;

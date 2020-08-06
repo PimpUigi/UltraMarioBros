@@ -40,10 +40,8 @@ OSMesg D_80339CD4;
 struct VblankHandler gGameVblankHandler;
 uintptr_t gPhysicalFrameBuffers[3];
 uintptr_t gPhysicalZBuffer;
-void *D_80339CF0;
+void *D_80339CF0[2];
 void *D_80339CF4;
-void *D_80339CF0Luigi;
-void *D_80339CF4Luigi;
 struct MarioAnimation D_80339D10[2];
 struct MarioAnimation gDemo;
 UNUSED u8 filler80339D30[0x90];
@@ -60,7 +58,7 @@ struct Controller *gPlayer2Controller = &gControllers[1];
 struct Controller *gPlayer3Controller = &gControllers[2];
 struct DemoInput *gCurrDemoInput = NULL; // demo input sequence
 u16 gDemoInputListID = 0;
-const u8 activePlayers = 2;
+const u8 gActivePlayers = 2;
 struct DemoInput gRecordedDemoInput = { 0 }; // possibly removed in EU. TODO: Check
 
 /**
@@ -440,7 +438,7 @@ void run_demo_inputs(void) {
 void read_controller_inputs(void) {
     s32 i;
 
-    for (i = 0; i < activePlayers; i++) {
+    for (i = 0; i < gActivePlayers; i++) {
         struct Controller *controller = &gControllers[i];
 
         // if we're receiving inputs, update the controller struct
@@ -512,6 +510,7 @@ void init_controllers(void) {
 }
 
 void setup_game_memory(void) {
+    int i = 0;
     UNUSED u8 pad[8];
 
     set_segment_base_addr(0, (void *) 0x80000000);
@@ -521,12 +520,13 @@ void setup_game_memory(void) {
     gPhysicalFrameBuffers[0] = VIRTUAL_TO_PHYSICAL(gFrameBuffer0);
     gPhysicalFrameBuffers[1] = VIRTUAL_TO_PHYSICAL(gFrameBuffer1);
     gPhysicalFrameBuffers[2] = VIRTUAL_TO_PHYSICAL(gFrameBuffer2);
-    D_80339CF0 = main_pool_alloc(0x4000, MEMORY_POOL_LEFT);
-    set_segment_base_addr(17, (void *) D_80339CF0);
-    func_80278A78(&D_80339D10[0], gMarioAnims, D_80339CF0);
-    D_80339CF0Luigi = main_pool_alloc(0x4000, MEMORY_POOL_LEFT);
-    set_segment_base_addr(17, (void *) D_80339CF0Luigi);
-    func_80278A78(&D_80339D10[1], gMarioAnims, D_80339CF0Luigi);
+    
+    for (i = 0; i < gActivePlayers; i++) {
+        D_80339CF0[i] = main_pool_alloc(0x4000, MEMORY_POOL_LEFT);
+        set_segment_base_addr(17, (void *)D_80339CF0[i]);
+        func_80278A78(&D_80339D10[i], gMarioAnims, D_80339CF0[i]);
+    }
+
     D_80339CF4 = main_pool_alloc(2048, MEMORY_POOL_LEFT);
     set_segment_base_addr(24, (void *) D_80339CF4);
     func_80278A78(&gDemo, gDemoInputs, D_80339CF4);
