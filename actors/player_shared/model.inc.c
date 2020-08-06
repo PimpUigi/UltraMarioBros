@@ -40,12 +40,12 @@ ALIGNED8 static const u8 player_texture_eyes_closed[] = {
 };
 
 // 0x04005890
-ALIGNED8 static const u8 player_texture_eyes_right[] = {
+ALIGNED8 static const u8 player_texture_eyes_left[] = {
 #include "actors/player_shared/player_eyes_left_unused.rgba16.inc.c"
 };
 
 // 0x04006090
-ALIGNED8 static const u8 player_texture_eyes_left[] = {
+ALIGNED8 static const u8 player_texture_eyes_right[] = {
 #include "actors/player_shared/player_eyes_right_unused.rgba16.inc.c"
 };
 
