@@ -9,7 +9,7 @@
 #include "levels/castle_inside/header.h"
 #include "levels/hmc/header.h"
 #include "levels/ttm/header.h"
-#include "Mario.h"
+#include "mario.h"
 #include "memory.h"
 #include "moving_texture.h"
 #include "object_list_processor.h"

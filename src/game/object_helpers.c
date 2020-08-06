@@ -17,7 +17,7 @@
 #include "interaction.h"
 #include "level_table.h"
 #include "level_update.h"
-#include "Mario.h"
+#include "mario.h"
 #include "mario_actions_cutscene.h"
 #include "memory.h"
 #include "obj_behaviors.h"
