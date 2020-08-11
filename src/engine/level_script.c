@@ -439,8 +439,9 @@ static void level_cmd_init_mario(void) {
     gMarioSpawnInfo->unk18 = gLoadedGraphNodes[CMD_GET(u8, 3)];
     gMarioSpawnInfo->next = NULL;
 
+    gIsInStarSelect = FALSE;
+
     sCurrentCmd = CMD_NEXT;
-    inStarSelect = 0;
 }
 
 static void level_cmd_place_object(void) {

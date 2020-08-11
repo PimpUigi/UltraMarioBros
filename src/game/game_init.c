@@ -129,7 +129,7 @@ void clear_z_buffer(void) { // RISKY
     gDPSetFillColor(gDisplayListHead++,
                     GPACK_ZDZ(G_MAXFBZ, 0) << 16 | GPACK_ZDZ(G_MAXFBZ, 0));
 
-    if ((gCurrLevelNum != LEVEL_MIN) && !inStarSelect && !inEnd) {
+    if ((gCurrLevelNum != LEVEL_MIN) && !gIsInStarSelect && !gIsGameEnding) {
         gDPFillRectangle(gDisplayListHead++, 0, height - height / (luigiCamFirst + 1), SCREEN_WIDTH - 1,
                          height / 2 * (luigiCamFirst + 1) - 1);
     } else {
@@ -158,7 +158,7 @@ void display_frame_buffer(void) {
         gDPSetColorImage(gDisplayListHead++, G_IM_FMT_RGBA, G_IM_SIZ_16b, SCREEN_WIDTH, gPhysicalFrameBuffers[e]);
     }
 
-    if ((gCurrLevelNum != LEVEL_MIN) && !inStarSelect && !inEnd) { // RISKY
+    if ((gCurrLevelNum != LEVEL_MIN) && !gIsInStarSelect && !gIsGameEnding) { // RISKY
         gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, d - d / (luigiCamFirst + 1),
                       SCREEN_WIDTH, d / 2 * (luigiCamFirst + 1));
     } else {
@@ -362,11 +362,11 @@ void display_and_vsync(void) {
     profiler_log_thread5_time(AFTER_DISPLAY_LISTS);
 //    osRecvMesg(&gGameVblankQueue, &D_80339BEC, OS_MESG_BLOCK);
 
-    if ((gCurrLevelNum == LEVEL_MIN) && !inStarSelect && !inEnd) {
+    if ((gCurrLevelNum == LEVEL_MIN) && !gIsInStarSelect && !gIsGameEnding) {
         osRecvMesg(&gGameVblankQueue, &D_80339BEC, OS_MESG_BLOCK);
     }
 
-    if ((gCurrLevelNum != LEVEL_MIN) && !inStarSelect && !inEnd) {
+    if ((gCurrLevelNum != LEVEL_MIN) && !gIsInStarSelect && !gIsGameEnding) {
         if (!luigiCamFirst) {
             osViSwapBuffer((void *) PHYSICAL_TO_VIRTUAL(gPhysicalFrameBuffers[sCurrFBNum]));
         }

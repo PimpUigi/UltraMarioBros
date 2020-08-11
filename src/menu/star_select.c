@@ -380,7 +380,7 @@ Gfx *geo_act_selector_strings(s16 callContext, UNUSED struct GraphNode *node) {
     if (callContext == GEO_CONTEXT_RENDER) {
         print_act_selector_strings();
     }
-    inStarSelect = 1;
+    gIsInStarSelect = TRUE;
     return NULL;
 }
 

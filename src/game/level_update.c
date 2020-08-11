@@ -172,14 +172,15 @@ struct MarioState *gLuigiState = &gMarioStates[1];
 
 u8 *luigiData = NULL;
 s8 D_8032C9E0 = 0;
+#ifdef TARGET_N64
 OSTime oldTime = 0;
 OSTime deltaTime = 0;
+#endif
 
 u8 luigiCamFirst = 0;
-u8 gameLagged = 0;
-int inEnd;
-
-u8 inStarSelect = 0;
+//u8 gameLagged = 0;
+int gIsGameEnding;
+int gIsInStarSelect = FALSE;
 
 u16 level_control_timer(s32 timerOp) {
     switch (timerOp) {
@@ -1049,9 +1050,10 @@ void basic_update(UNUSED s16 *arg) {
 }
 
 s32 play_mode_normal(void) {
+#ifdef TARGET_N64
     OSTime newTime = osGetTime();
     int i;
-
+#endif
     warp_area();
 
     check_instant_warp(gLuigiState);
@@ -1065,6 +1067,7 @@ s32 play_mode_normal(void) {
     gCurrentArea->marioCamera->cameraID = 0;
     gMarioStates[0].thisPlayerCamera = gCurrentArea->marioCamera;
 
+#ifdef TARGET_N64
     deltaTime += newTime - oldTime;
     oldTime = newTime;
     while (deltaTime > 1562744) {
@@ -1083,6 +1086,10 @@ s32 play_mode_normal(void) {
             }
         }
     }
+#else
+    area_update_objects();
+#endif
+
     update_hud_values();
     // this changes which camera is rendered from??
     if (gCurrentArea != NULL) {
@@ -1261,23 +1268,31 @@ s32 update_level(void) {
             break;
         case PLAY_MODE_PAUSED:
             changeLevel = play_mode_paused();
+#ifdef TARGET_N64
             deltaTime = 0;
             oldTime = osGetTime();
+#endif
             break;
         case PLAY_MODE_CHANGE_AREA:
             changeLevel = play_mode_change_area();
+#ifdef TARGET_N64
             deltaTime = 0;
             oldTime = osGetTime();
+#endif
             break;
         case PLAY_MODE_CHANGE_LEVEL:
             changeLevel = play_mode_change_level();
+#ifdef TARGET_N64
             deltaTime = 0;
             oldTime = osGetTime();
+#endif
             break;
         case PLAY_MODE_FRAME_ADVANCE:
             changeLevel = play_mode_frame_advance();
+#ifdef TARGET_N64
             deltaTime = 0;
             oldTime = osGetTime();
+#endif
             break;
     }
 
@@ -1372,8 +1387,10 @@ s32 lvl_init_or_update(s16 initOrUpdate, UNUSED s32 unused) {
     switch (initOrUpdate) {
         case 0:
             result = init_level();
+#ifdef TARGET_N64
             deltaTime = 0;
             oldTime = osGetTime();
+#endif
             break;
         case 1:
             result = update_level();

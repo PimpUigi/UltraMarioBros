@@ -10,8 +10,8 @@
 extern const u8 gActivePlayers;
 extern u8 luigiCamFirst;
 extern u8 gameLagged;
-extern int inEnd;
-extern u8 inStarSelect;
+extern int gIsGameEnding;
+extern int gIsInStarSelect;
 extern const u8 horizontal;
 
 // Certain functions are marked as having return values, but do not
