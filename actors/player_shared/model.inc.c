@@ -14,16 +14,6 @@ ALIGNED8 static const u8 player_texture_yellow_button[] = {
 #include "actors/player_shared/player_overalls_button.rgba16.inc.c"
 };
 
-// 0x04002090
-ALIGNED8 static const u8 player_texture_hair_sideburn[] = {
-#include "actors/player_shared/player_sideburn.rgba16.inc.c"
-};
-
-// 0x04002890
-ALIGNED8 static const u8 player_texture_mustache[] = {
-#include "actors/player_shared/player_mustache.rgba16.inc.c"
-};
-
 // 0x04003090
 ALIGNED8 static const u8 player_texture_eyes_front[] = {
 #include "actors/player_shared/player_eyes_center.rgba16.inc.c"
