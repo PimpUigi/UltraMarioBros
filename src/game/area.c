@@ -368,62 +368,62 @@ void play_transition_after_delay(s16 transType, s16 time, u8 red, u8 green, u8 b
     play_transition(transType, time, red, green, blue);
 }
 
-void render_game(void) {
-    if (gCurrentArea != NULL && !gWarpTransition.pauseRendering) {
-        
-        struct GraphNodeRoot *manip;
-        manip = gCurrentArea->unk04;
-        // get_object_list_from_behavior(bhvActSelector);
-        // count_objects_with_behavior(bhvActSelector);
-        gIsGameEnding = ((gMarioStates[0].action == ACT_END_PEACH_CUTSCENE)
-                 || (gMarioStates[0].action == ACT_CREDITS_CUTSCENE)
-                 || (gMarioStates[0].action == ACT_END_WAVING_CUTSCENE)
-                );
-        if ((gCurrLevelNum != LEVEL_MIN) && (count_objects_with_behavior(bhvActSelector) == 0)
-            && !gIsGameEnding) {
-            if (horizontal) {
-                manip->width = 80;
-            } else {
-                manip->height = 60;
-            }
-
-            if (luigiCamFirst) {
-                gCurrentArea->camera = gCurrentArea->luigiCamera;
-                if (horizontal) {
-                    manip->x = manip->width * 3;
-                } else {
-                    manip->y = manip->height * 3;
-                }
-                geo_process_root(gCurrentArea->unk04, D_8032CE74, D_8032CE78, gFBSetColor);
-                gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&D_8032CF00));
-            } else {
-                gCurrentArea->camera = gCurrentArea->marioCamera;
-                if (horizontal) {
-                    manip->x = manip->width;
-                } else {
-                    manip->y = manip->height;
-                }
-                geo_process_root(gCurrentArea->unk04, D_8032CE74, D_8032CE78, gFBSetColor);
-                gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&D_8032CF00));
-            }
-            // debug
-            luigiCamFirst = luigiCamFirst ^ 1;
+void split_screens(void) {
+    struct GraphNodeRoot *manip;
+    manip = gCurrentArea->unk04;
+    // get_object_list_from_behavior(bhvActSelector);
+    // count_objects_with_behavior(bhvActSelector);
+    gIsGameEnding = ((gMarioStates[0].action == ACT_END_PEACH_CUTSCENE)
+             || (gMarioStates[0].action == ACT_CREDITS_CUTSCENE)
+             || (gMarioStates[0].action == ACT_END_WAVING_CUTSCENE)
+            );
+    if ((gCurrLevelNum != LEVEL_MIN) && (count_objects_with_behavior(bhvActSelector) == 0)
+        && !gIsGameEnding) {
+        if (horizontal) {
+            manip->width = SCREEN_WIDTH / 4;
         } else {
+            manip->height = SCREEN_HEIGHT / 4;
+        }
+         if (luigiCamFirst) {
+            gCurrentArea->camera = gCurrentArea->luigiCamera;
             if (horizontal) {
-                manip->width = SCREEN_WIDTH / 2;
-                manip->x = manip->width;
+                manip->x = manip->width * 3;
             } else {
-                manip->height = SCREEN_HEIGHT / 2;
-                manip->y = manip->height;
+                manip->y = manip->height * 3;
             }
-
-
             geo_process_root(gCurrentArea->unk04, D_8032CE74, D_8032CE78, gFBSetColor);
             gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&D_8032CF00));
-            luigiCamFirst = 0;
+        } else {
+            gCurrentArea->camera = gCurrentArea->marioCamera;
+            if (horizontal) {
+                manip->x = manip->width;
+            } else {
+                manip->y = manip->height;
+            }
+            geo_process_root(gCurrentArea->unk04, D_8032CE74, D_8032CE78, gFBSetColor);
+            gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&D_8032CF00));
         }
-        // real code
+        // debug
+        luigiCamFirst = luigiCamFirst ^ 1;
+    } else {
+        if (horizontal) {
+            manip->width = SCREEN_WIDTH / 2;
+            manip->x = manip->width;
+        } else {
+            manip->height = SCREEN_HEIGHT / 2;
+            manip->y = manip->height;
+        }
+          geo_process_root(gCurrentArea->unk04, D_8032CE74, D_8032CE78, gFBSetColor);
+        gSPViewport(gDisplayListHead++, VIRTUAL_TO_PHYSICAL(&D_8032CF00));
+        luigiCamFirst = 0;
+    }
+}
+   
+void render_game(void) {
+    if (gCurrentArea != NULL && !gWarpTransition.pauseRendering) {
+        split_screens();
 
+        // real code
         gDPSetScissor(gDisplayListHead++, G_SC_NON_INTERLACE, 0, BORDER_HEIGHT, SCREEN_WIDTH,
                       SCREEN_HEIGHT - BORDER_HEIGHT);
         render_hud();
